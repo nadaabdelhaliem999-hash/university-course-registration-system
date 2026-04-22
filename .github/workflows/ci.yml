@@ -37,9 +37,13 @@ jobs:
         run: |
           pytest tests/ -v --tb=short --cov=. --cov-report=xml --cov-report=term
 
-      # Step 5: CODE QUALITY STEP - SonarQube scan
+    # Step 5: CODE QUALITY STEP - SonarQube scan
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
+        with:
+          args: >
+            -Dsonar.projectKey=nadaabdelhaliem999-hash_university-course-registration-system
+            -Dsonar.organization=nadaabdelhaliem999-hash
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
