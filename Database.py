@@ -1,10 +1,12 @@
 import sqlite3
 
+# Connect to database
 def get_connection():
     connection = sqlite3.connect("university.db")
     connection.row_factory = sqlite3.Row
     return connection
 
+# Create users table
 def create_users_table():
     connection = get_connection()
     connection.execute("""
