@@ -8,6 +8,9 @@ from database import get_connection, init_db
 app = Flask(__name__)
 app.secret_key = "university_secret_key_2025"
 
+# ✅ CALL THIS HERE - so it runs when pytest imports the app
+init_db()
+
 # ─────────────────────────────────────────
 # Home page → redirect to login
 # ─────────────────────────────────────────
@@ -107,5 +110,5 @@ def logout():
     return redirect("/login")
 
 if __name__ == "__main__":
-    init_db()
+   
     app.run(debug=True)
