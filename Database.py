@@ -22,6 +22,10 @@ def create_users_table():
     connection.commit()
     connection.close()
 
-if __name__ == "__main__":
+def init_db():
+    """Initialize the database - call this when app starts"""
     create_users_table()
+
+if __name__ == "__main__":
+    init_db()
     print("Users table created!")
