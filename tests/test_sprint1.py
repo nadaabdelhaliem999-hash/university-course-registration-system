@@ -7,7 +7,7 @@ import Database  # Import your database module
 @pytest.fixture
 def client():
     # Create database tables before each test
-    Database.create_users_tables()  # You need this function in Database.py
+    Database.create_users_table()  # You need this function in Database.py
     
     app.config["TESTING"] = True
     app.config["SECRET_KEY"] = "test"
