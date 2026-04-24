@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, render_template, request, redirect, session
-from database import get_connection, create_users_table
+from database import get_connection, init_db
 
 app = Flask(__name__)
 app.secret_key = "university_secret_key_2025"
@@ -107,5 +107,5 @@ def logout():
     return redirect("/login")
 
 if __name__ == "__main__":
-    create_users_table()
+    init_db()
     app.run(debug=True)
