@@ -4,7 +4,7 @@ from Database import get_connection, create_users_table
 
 app = Flask(__name__)
 app.secret_key = "university_secret_key_2025"
-
+create_users_table()
 @app.route("/register", methods=["GET", "POST"])
 def register():
     error = None
