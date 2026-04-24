@@ -1,6 +1,6 @@
-name: Build
+name: Build, Test & SonarQube Analysis
 
-on:
+on: 
   push:
     branches:
       - main
@@ -10,7 +10,7 @@ on:
 jobs:
   build-and-test:
     name: Build, Test & SonarQube Analysis
-    runs-on: ubuntu-latest  # Changed to ubuntu-latest (better for Python)
+    runs-on: ubuntu-latest
 
     steps:
       # Step 1: Checkout code
@@ -20,24 +20,24 @@ jobs:
           fetch-depth: 0  # Required for SonarQube analysis
 
       # Step 2: Setup Python
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
 
-      # Step 3: BUILD STEP - Install dependencies
+      # Step 3: Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov
+          pip install flask pytest pytest-cov
+          pip install -r requirements.txt  # Install from requirements.txt if it exists
 
-      # Step 4: TEST STEP - Run unit tests
+      # Step 4: Run unit tests
       - name: Run unit tests
         run: |
           pytest tests/ -v --tb=short --cov=. --cov-report=xml --cov-report=term
 
-    # Step 5: CODE QUALITY STEP - SonarQube scan
+      # Step 5: SonarQube scan
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         with:
