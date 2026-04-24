@@ -1,12 +1,14 @@
 import sqlite3
+import os
 
-# Connect to database
+# Use memory database for testing, real file for production
+DATABASE = os.environ.get("DATABASE", "university.db")
+
 def get_connection():
-    connection = sqlite3.connect("university.db")
+    connection = sqlite3.connect(DATABASE)
     connection.row_factory = sqlite3.Row
     return connection
 
-# Create users table
 def create_users_table():
     connection = get_connection()
     connection.execute("""
@@ -19,7 +21,7 @@ def create_users_table():
     """)
     connection.commit()
     connection.close()
-    print("Users table created!")
 
 if __name__ == "__main__":
     create_users_table()
+    print("Users table created!")
