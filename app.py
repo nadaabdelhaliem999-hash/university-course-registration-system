@@ -1,99 +1,90 @@
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
 from flask import Flask, render_template, request, redirect, session
 from database import get_connection, init_db
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 app = Flask(__name__)
 app.secret_key = "university_secret_key_2025"
 
-# ✅ CALL THIS HERE - so it runs when pytest imports the app
+# Initialize DB
 init_db()
 
-# ─────────────────────────────────────────
-# Home page → redirect to login
-# ─────────────────────────────────────────
-@app.route("/")
+# ─────────────────────────────
+# Home
+# ─────────────────────────────
+@app.route("/", methods=["GET"])
 def home():
     return redirect("/login")
 
-# ─────────────────────────────────────────
-# Register page
-# ─────────────────────────────────────────
+# ─────────────────────────────
+# Register
+# ─────────────────────────────
 @app.route("/register", methods=["GET", "POST"])
 def register():
     error = None
 
     if request.method == "POST":
-        name     = request.form["name"].strip()
-        email    = request.form["email"].strip()
+        name = request.form["name"].strip()
+        email = request.form["email"].strip()
         password = request.form["password"].strip()
 
-        # Validation
         if not name or not email or not password:
             error = "All fields are required."
-
         elif "@" not in email or "." not in email:
             error = "Please enter a valid email address."
-
         elif len(password) < 6:
             error = "Password must be at least 6 characters."
-
         elif len(name) < 2:
             error = "Name must be at least 2 characters."
-
         else:
-            connection = get_connection()
+            conn = get_connection()
 
-            # Check if email already exists
-            existing = connection.execute(
+            existing = conn.execute(
                 "SELECT id FROM users WHERE email = ?", (email,)
             ).fetchone()
 
             if existing:
                 error = "This email is already registered."
             else:
-                # Save new user
-                connection.execute(
+                conn.execute(
                     "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
                     (name, email, password)
                 )
-                connection.commit()
-                connection.close()
+                conn.commit()
+                conn.close()
                 return redirect("/login")
 
-            connection.close()
+            conn.close()
 
     return render_template("register.html", error=error)
 
-# ─────────────────────────────────────────
-# Login page
-# ─────────────────────────────────────────
+# ─────────────────────────────
+# Login
+# ─────────────────────────────
 @app.route("/login", methods=["GET", "POST"])
 def login():
     error = None
 
     if request.method == "POST":
-        email    = request.form["email"].strip()
+        email = request.form["email"].strip()
         password = request.form["password"].strip()
 
         if not email or not password:
             error = "Please enter your email and password."
         else:
-            connection = get_connection()
+            conn = get_connection()
 
-            # Check credentials
-            user = connection.execute(
+            user = conn.execute(
                 "SELECT * FROM users WHERE email = ? AND password = ?",
                 (email, password)
             ).fetchone()
 
-            connection.close()
+            conn.close()
 
             if user:
-                # Save user in session
-                session["user_id"]   = user["id"]
+                session["user_id"] = user["id"]
                 session["user_name"] = user["name"]
                 return redirect("/courses")
             else:
@@ -101,14 +92,13 @@ def login():
 
     return render_template("login.html", error=error)
 
-# ─────────────────────────────────────────
+# ─────────────────────────────
 # Logout
-# ─────────────────────────────────────────
-@app.route("/logout")
+# ─────────────────────────────
+@app.route("/logout", methods=["GET"])
 def logout():
     session.clear()
     return redirect("/login")
 
 if __name__ == "__main__":
-   
     app.run(debug=True)
