@@ -2,25 +2,40 @@ import os
 import sys
 from flask import Flask, render_template, request, redirect, session
 from database import get_connection, init_db
+from werkzeug.security import generate_password_hash, check_password_hash
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 app = Flask(__name__)
-app.secret_key = "university_secret_key_2025"
+
+
+# CONSTANTS - Fixes the duplicate literal code smell
+
+LOGIN_URL = "/login"
+REGISTER_URL = "/register"
+COURSES_URL = "/courses"
+HOME_URL = "/"
+
+
+# SECURITY - Fixes hardcoded secret key code smell
+
+app.secret_key = os.environ.get("SECRET_KEY", os.urandom(24))
 
 # Initialize DB
 init_db()
 
 
-# Home
-@app.route("/", methods=["GET"])
+
+# HOME ROUTE
+
+@app.route(HOME_URL, methods=["GET"])
 def home():
-    return redirect("/login")
+    return redirect(LOGIN_URL)  
 
 
-# Register
+# REGISTER ROUTE
 
-@app.route("/register", methods=["GET", "POST"])
+@app.route(REGISTER_URL, methods=["GET", "POST"])
 def register():
     error = None
 
@@ -47,22 +62,24 @@ def register():
             if existing:
                 error = "This email is already registered."
             else:
+               
+                hashed_password = generate_password_hash(password)
                 conn.execute(
                     "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-                    (name, email, password)
+                    (name, email, hashed_password)  
                 )
                 conn.commit()
                 conn.close()
-                return redirect("/login")
-
+                return redirect(LOGIN_URL) 
             conn.close()
 
     return render_template("register.html", error=error)
 
 
-# Login
 
-@app.route("/login", methods=["GET", "POST"])
+# LOGIN ROUTE
+
+@app.route(LOGIN_URL, methods=["GET", "POST"])
 def login():
     error = None
 
@@ -74,30 +91,36 @@ def login():
             error = "Please enter your email and password."
         else:
             conn = get_connection()
-
+h
             user = conn.execute(
-                "SELECT * FROM users WHERE email = ? AND password = ?",
-                (email, password)
+                "SELECT * FROM users WHERE email = ?", (email,)
             ).fetchone()
 
             conn.close()
 
-            if user:
+            if user and check_password_hash(user["password"], password):
                 session["user_id"] = user["id"]
                 session["user_name"] = user["name"]
-                return redirect("/courses")
+                return redirect(COURSES_URL)  
             else:
                 error = "Wrong email or password."
 
     return render_template("login.html", error=error)
 
 
-# Logout
+# LOGOUT ROUTE
 
 @app.route("/logout", methods=["GET"])
 def logout():
     session.clear()
-    return redirect("/login")
+    return redirect(LOGIN_URL)  
+    
+if __name__ == "__main__":
+    app.run(debug=True) 
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
