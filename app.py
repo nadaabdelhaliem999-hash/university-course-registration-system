@@ -11,16 +11,15 @@ app.secret_key = "university_secret_key_2025"
 # Initialize DB
 init_db()
 
-# ─────────────────────────────
+
 # Home
-# ─────────────────────────────
 @app.route("/", methods=["GET"])
 def home():
     return redirect("/login")
 
-# ─────────────────────────────
+
 # Register
-# ─────────────────────────────
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     error = None
@@ -60,9 +59,9 @@ def register():
 
     return render_template("register.html", error=error)
 
-# ─────────────────────────────
+
 # Login
-# ─────────────────────────────
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     error = None
@@ -92,9 +91,9 @@ def login():
 
     return render_template("login.html", error=error)
 
-# ─────────────────────────────
+
 # Logout
-# ─────────────────────────────
+
 @app.route("/logout", methods=["GET"])
 def logout():
     session.clear()
