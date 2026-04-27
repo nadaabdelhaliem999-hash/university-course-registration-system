@@ -1,5 +1,4 @@
 #include "user.h"
-
 bool isValidEmail(string email) {
     return email.find('@') != string::npos;
 }
