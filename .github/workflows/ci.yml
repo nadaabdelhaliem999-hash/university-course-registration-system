@@ -14,39 +14,33 @@ jobs:
 
     steps:
 
-      # ── Step 1: Get the code ──────────────────────
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # ── Step 2: Install C++ tools ─────────────────
       - name: Install C++ compiler and bear
         run: |
           sudo apt-get update
           sudo apt-get install -y g++ build-essential bear
 
-      # ── Step 3: Build + generate compile_commands ─
       - name: Build project
         run: |
           bear -- g++ -Iinclude src/user.cpp src/main.cpp -o main
           echo "Build successful!"
-          echo "compile_commands.json generated!"
 
-      # ── Step 4: Run unit tests ────────────────────
+      - name: Verify compile_commands.json exists
+        run: |
+          ls -la compile_commands.json
+          echo "compile_commands.json found!"
+
       - name: Run unit tests
         run: |
           g++ -Iinclude src/user.cpp tests/test.cpp -o test_run
           ./test_run
 
-      # ── Step 5: SonarQube scan ────────────────────
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
-        with:
-          args: >
-            -Dsonar.projectKey=nadaabdelhaliem999-hash_university-course-registration-system
-            -Dsonar.organization=nadaabdelhaliem999-hash
-            -Dsonar.cfamily.compile-commands=compile_commands.json
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
