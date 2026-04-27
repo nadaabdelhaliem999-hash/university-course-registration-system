@@ -35,7 +35,7 @@ jobs:
         ./test
 
     # SonarCloud (NEW FIXED WAY)
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarqube-scan-action@v5
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+   - name: SonarCloud Scan
+  uses: sonarsource/sonarqube-scan-action@v6
+  env:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
