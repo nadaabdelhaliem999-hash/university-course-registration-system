@@ -9,32 +9,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout code
+    
+    # 1. Checkout code
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Install compiler
+    # 2. Install dependencies
+    
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y g++
+        sudo apt-get install -y g++ lcov
 
-    # Build application
+    # 3. Build application (with coverage flags)
     - name: Build application
       run: |
-        g++ -Iinclude src/main.cpp src/user.cpp -o app
+        g++ -Iinclude -fprofile-arcs -ftest-coverage src/main.cpp src/user.cpp -o app
 
-    # Build tests
+   
+    # 4. Build tests
     - name: Build tests
       run: |
-        g++ -Iinclude tests/test.cpp src/user.cpp -o test
+        g++ -Iinclude -fprofile-arcs -ftest-coverage tests/test.cpp src/user.cpp -o test
 
-    # Run tests
+  
+    # 5. Run tests (generates coverage data)
+  
     - name: Run unit tests
       run: |
         ./test
 
-    # SonarCloud Scan (FIXED)
+  
+    # 6. Generate coverage report
+   
+    - name: Generate coverage report
+      run: |
+        lcov --capture --directory . --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' --output-file coverage.info
+        lcov --list coverage.info
+
+    
+    # 7. SonarCloud scan
     - name: SonarCloud Scan
       uses: SonarSource/sonarqube-scan-action@v6
       env:
