@@ -1,4 +1,5 @@
 #include "user.h"
+#include <string>
 
 // FIXED passing by reference
 bool isValidEmail(const string& email) {
