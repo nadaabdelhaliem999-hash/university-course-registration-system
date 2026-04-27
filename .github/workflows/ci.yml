@@ -9,37 +9,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout code
-    - name: Checkout code
+    - name: Checkout Code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-    # Install compiler
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y g++
+        sudo apt-get install -y g++ bear
 
-    # Build application
-    - name: Build application
+    - name: Generate Compilation Database
+      run: |
+        bear -- g++ -Iinclude src/main.cpp src/user.cpp -o app
+        bear --append -- g++ -Iinclude tests/test.cpp src/user.cpp -o test
+
+    - name: Build Application
       run: |
         g++ -Iinclude src/main.cpp src/user.cpp -o app
 
-    # Build tests
-    - name: Build tests
+    - name: Build Tests
       run: |
         g++ -Iinclude tests/test.cpp src/user.cpp -o test
 
-    # Run tests
-    - name: Run unit tests
+    - name: Run Unit Tests
       run: |
         ./test
 
-    # SonarCloud Scan
     - name: SonarCloud Scan
-      uses: SonarSource/sonarqube-scan-action@v6
+      uses: SonarSource/sonarqube-scan-action@v5.0.0
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-          -Dsonar.projectKey=nadaabdelhaliem999-hash_university-course-registration-system
-          -Dsonar.organization=nadaabdelhaliem999-hash
+        SONAR_HOST_URL: https://sonarcloud.io
