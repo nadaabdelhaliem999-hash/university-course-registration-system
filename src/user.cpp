@@ -1,12 +1,11 @@
 #include "user.h"
-#include <string>
+#include <string_view>
 
-// Check if email contains @ symbol
-bool isValidEmail(const std::string& email) {
-    return email.find('@') != std::string::npos;
+//use string_view
+bool isValidEmail(std::string_view email) {
+    return email.find('@') != std::string_view::npos;
 }
 
-// Check if password is at least 6 characters
-bool isValidPassword(const std::string& password) {
+bool isValidPassword(std::string_view password) {
     return password.length() >= 6;
 }
