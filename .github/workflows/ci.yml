@@ -1,32 +1,27 @@
-name: C++ CI Pipeline
+name: CI 
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
-  build-test-sonar:
+  build-test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-    #  Build step
-    - name: Compile code
+    # Build
+    - name: Compile
       run: |
-        g++ sprint1.cpp -o sprint1
-        g++ sprint2.cpp -o sprint2
-        g++ sprint3.cpp -o sprint3
-        g++ test.cpp -o test
+        g++ src/main.cpp src/user.cpp -Iinclude -o app
+        g++ tests/test.cpp src/user.cpp -Iinclude -o test
 
-    # Test step
+    #  Test
     - name: Run tests
       run: ./test
-
-    #  SonarQube Scan
+      
+ #  SonarQube Scan
     - name: SonarQube Scan
       if: github.ref == 'refs/heads/main'
       uses: SonarSource/sonarcloud-github-action@master
