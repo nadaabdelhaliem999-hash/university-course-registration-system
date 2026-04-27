@@ -17,22 +17,26 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y g++
+        sudo apt-get install -y g++ bear
 
-    - name: Download build-wrapper
+    - name: Generate compilation database with Bear
       run: |
-        curl -L -o build-wrapper-linux-x86.zip https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
-        unzip build-wrapper-linux-x86.zip
-        chmod +x build-wrapper-linux-x86/build-wrapper-linux-x86
-
-    - name: Build with build-wrapper
-      run: |
-        ./build-wrapper-linux-x86/build-wrapper-linux-x86 --out-dir bw-output g++ -Iinclude src/main.cpp src/user.cpp -o app
-        ./build-wrapper-linux-x86/build-wrapper-linux-x86 --out-dir bw-output g++ -Iinclude tests/test.cpp src/user.cpp -o test
+        # Clean previous builds
+        rm -f app test compile_commands.json
+        
+        # Generate compilation database for both app and tests
+        bear --output compile_commands.json -- \
+          bash -c "g++ -Iinclude src/main.cpp src/user.cpp -o app && \
+                   g++ -Iinclude tests/test.cpp src/user.cpp -o test"
+        
+        # Show that compile_commands.json was created
+        echo "compile_commands.json created"
+        ls -la compile_commands.json
 
     - name: Run unit tests
       run: |
         ./test
+        echo "All tests passed"
 
     - name: SonarCloud Scan
       uses: SonarSource/sonarqube-scan-action@v5.0.0
