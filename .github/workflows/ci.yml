@@ -18,18 +18,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required for SonarQube
+          fetch-depth: 0
 
-      # ── Step 2: Install C++ compiler (Build Step) ─
+      # ── Step 2: Install C++ tools (Build Step) ────
       - name: Install C++ compiler
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++ build-essential
+          sudo apt-get install -y g++ build-essential bear
 
-      # ── Step 3: Build the project ─────────────────
+      # ── Step 3: Build + generate compile_commands ─
       - name: Build project
         run: |
-          g++ -Iinclude src/user.cpp src/main.cpp -o main
+          bear -- g++ -Iinclude src/user.cpp src/main.cpp -o main
           echo "Build successful!"
 
       # ── Step 4: Run unit tests (Test Step) ────────
@@ -45,6 +45,7 @@ jobs:
           args: >
             -Dsonar.projectKey=nadaabdelhaliem999-hash_university-course-registration-system
             -Dsonar.organization=nadaabdelhaliem999-hash
+            -Dsonar.cfamily.compile-commands=compile_commands.json
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
