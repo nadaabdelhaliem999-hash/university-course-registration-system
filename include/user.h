@@ -2,7 +2,6 @@
 #define USER_H
 #include <string>
 
-// removed: using namespace std;
 
 struct User {
     std::string email;
