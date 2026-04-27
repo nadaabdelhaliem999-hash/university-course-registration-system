@@ -2,15 +2,16 @@
 #define USER_H
 
 #include <string>
-using namespace std;
+
+// removed: using namespace std;
 
 struct User {
-    string email;
-    string password;
+    std::string email;
+    std::string password;
 };
 
-// FIXED: pass by const reference
-bool isValidEmail(const string& email);
-bool isValidPassword(const string& password);
+// Also fix here (combine with previous issue)
+bool isValidEmail(const std::string& email);
+bool isValidPassword(const std::string& password);
 
 #endif
