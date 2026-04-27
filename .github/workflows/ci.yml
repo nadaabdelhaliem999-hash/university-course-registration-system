@@ -9,17 +9,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout repository
+    # Checkout
     - name: Checkout code
       uses: actions/checkout@v3
 
-    #  Install compiler
+    # Install compiler
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y g++
 
-    # Build application
+    # Build app
     - name: Build application
       run: |
         g++ -Iinclude src/main.cpp src/user.cpp -o app
@@ -34,9 +34,8 @@ jobs:
       run: |
         ./test
 
-    #  SonarCloud analysis
+    # SonarCloud (NEW FIXED WAY)
     - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
+      uses: SonarSource/sonarqube-scan-action@v5
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: https://sonarcloud.io
