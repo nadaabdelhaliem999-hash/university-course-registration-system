@@ -2,59 +2,35 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build-test-quality:
     runs-on: ubuntu-latest
 
     steps:
-    
-    # 1. Checkout code
     - name: Checkout code
       uses: actions/checkout@v4
+      fetch-depth: 0
 
-    # 2. Install dependencies
-    
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y g++ lcov
+        sudo apt-get install -y g++
 
-    # 3. Build application (with coverage flags)
     - name: Build application
       run: |
-        g++ -Iinclude -fprofile-arcs -ftest-coverage src/main.cpp src/user.cpp -o app
+        g++ -Iinclude src/main.cpp src/user.cpp -o app
 
-   
-    # 4. Build tests
     - name: Build tests
       run: |
-        g++ -Iinclude -fprofile-arcs -ftest-coverage tests/test.cpp src/user.cpp -o test
+        g++ -Iinclude tests/test.cpp src/user.cpp -o test
 
-  
-    # 5. Run tests (generates coverage data)
-  
-    - name: Run unit tests
+    - name: Run tests
       run: |
         ./test
 
-  
-    # 6. Generate coverage report
-   
-    - name: Generate coverage report
-      run: |
-        lcov --capture --directory . --output-file coverage.info
-        lcov --remove coverage.info '/usr/*' --output-file coverage.info
-        lcov --list coverage.info
-
-    
-    # 7. SonarCloud scan
     - name: SonarCloud Scan
       uses: SonarSource/sonarqube-scan-action@v6
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-          -Dsonar.projectKey=nadaabdelhaliem999-hash_university-course-registration-system
-          -Dsonar.organization=nadaabdelhaliem999-hash
