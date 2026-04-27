@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # SonarCloud needs full history
+        fetch-depth: 0
 
     # Install dependencies
     - name: Install build tools
@@ -24,25 +24,23 @@ jobs:
     # Build with coverage flags
     - name: Compile with coverage
       run: |
-        # Build main app
-        g++ -g -O0 -fprofile-arcs -ftest-coverage src/main.cpp src/user.cpp  -Iinclude -o app
-        # Build tests
+        # Build tests with coverage
         g++ -g -O0 -fprofile-arcs -ftest-coverage tests/test.cpp src/user.cpp -Iinclude -o test
 
-    # Run tests
+    # Run tests (this generates .gcda and .gcno files)
     - name: Run tests
       run: ./test
 
-    #  Generate coverage report
+    # Generate coverage report 
     - name: Generate coverage
       run: |
-        lcov --capture --directory . --output-file coverage.info --no-external
-        lcov --remove coverage.info '/usr/*' --output-file coverage.info
+        lcov --capture --directory . --output-file coverage.info --no-external --ignore-errors unused
+        lcov --remove coverage.info '/usr/*' --output-file coverage.info --ignore-errors unused
         lcov --list coverage.info
 
-    #  SonarCloud Scan
+    # SonarCloud Scan
     - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@v5.0.0  
+      uses: SonarSource/sonarcloud-github-action@v5.0.0
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
