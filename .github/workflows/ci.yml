@@ -20,8 +20,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      # ── Step 2: Install C++ tools (Build Step) ────
-      - name: Install C++ compiler
+      # ── Step 2: Install C++ tools ─────────────────
+      - name: Install C++ compiler and bear
         run: |
           sudo apt-get update
           sudo apt-get install -y g++ build-essential bear
@@ -31,14 +31,15 @@ jobs:
         run: |
           bear -- g++ -Iinclude src/user.cpp src/main.cpp -o main
           echo "Build successful!"
+          echo "compile_commands.json generated!"
 
-      # ── Step 4: Run unit tests (Test Step) ────────
+      # ── Step 4: Run unit tests ────────────────────
       - name: Run unit tests
         run: |
           g++ -Iinclude src/user.cpp tests/test.cpp -o test_run
           ./test_run
 
-      # ── Step 5: SonarQube scan (Quality Step) ─────
+      # ── Step 5: SonarQube scan ────────────────────
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         with:
