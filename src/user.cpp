@@ -1,12 +1,12 @@
 #include "user.h"
 #include <string>
 
-// FIXED passing by reference
-bool isValidEmail(const string& email) {
-    return email.find('@') != string::npos;
+// Check if email contains @ symbol
+bool isValidEmail(const std::string& email) {
+    return email.find('@') != std::string::npos;
 }
 
-// FIXED
-bool isValidPassword(const string& password) {
+// Check if password is at least 6 characters
+bool isValidPassword(const std::string& password) {
     return password.length() >= 6;
 }
