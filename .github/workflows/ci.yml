@@ -25,9 +25,9 @@ jobs:
     - name: Compile with coverage
       run: |
         # Build main app
-        g++ -g -O0 -fprofile-arcs -ftest-coverage src/main.cpp src/user.cpp src/course.cpp -Iinclude -o app
+        g++ -g -O0 -fprofile-arcs -ftest-coverage src/main.cpp src/user.cpp  -Iinclude -o app
         # Build tests
-        g++ -g -O0 -fprofile-arcs -ftest-coverage tests/test.cpp src/user.cpp src/course.cpp -Iinclude -o test
+        g++ -g -O0 -fprofile-arcs -ftest-coverage tests/test.cpp src/user.cpp -Iinclude -o test
 
     # Run tests
     - name: Run tests
