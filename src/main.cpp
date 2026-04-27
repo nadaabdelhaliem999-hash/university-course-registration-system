@@ -1,12 +1,15 @@
 #include <iostream>
 #include <vector>
 #include "user.h"
+
 using namespace std;
 
 int main() {
     vector<User> users;
 
-    string email, password;
+    // FIXED: separate declarations
+    string email;
+    string password;
 
     cout << "=== Registration ===\n";
     cout << "Enter email: ";
