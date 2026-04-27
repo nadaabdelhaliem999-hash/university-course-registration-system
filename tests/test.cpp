@@ -1,6 +1,5 @@
 #include <cassert>
 #include "user.h"
-
 int main() {
     assert(isValidEmail("test@gmail.com") == true);
     assert(isValidEmail("wrong") == false);
