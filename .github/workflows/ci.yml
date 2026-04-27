@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ]  
   pull_request:
     branches: [ "main" ]
 
@@ -13,23 +13,31 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0
+        fetch-depth: 0  # Required for SonarCloud
 
-    - name: Install build tools
+    # BUILD STEP - Compiles project dependencies
+    - name: Build project
       run: |
-        sudo apt-get update
-        sudo apt-get install -y g++
+        # For C++, this is the build/compile step
+        g++ -c src/user.cpp -Iinclude -o user.o
+        g++ src/main.cpp user.o -Iinclude -o app
+        echo "Build complete"
 
-    - name: Compile
+    # TEST STEP - Runs unit tests automatically
+    - name: Run unit tests
       run: |
-        g++ src/main.cpp src/user.cpp -Iinclude -o app
+        # Compile and run tests
         g++ tests/test.cpp src/user.cpp -Iinclude -o test
+        ./test
+        echo "All tests passed"
 
-    - name: Run tests
-      run: ./test
-
+    # CODE QUALITY STEP - SonarCloud scan on main branch
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@v5.0.0
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        
+        args: >
+          -Dsonar.branch.name=${{ github.ref_name }}
