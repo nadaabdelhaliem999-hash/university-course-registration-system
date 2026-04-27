@@ -9,9 +9,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout
+    # Checkout code
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # Install compiler
     - name: Install dependencies
@@ -19,7 +19,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y g++
 
-    # Build app
+    # Build application
     - name: Build application
       run: |
         g++ -Iinclude src/main.cpp src/user.cpp -o app
@@ -34,8 +34,12 @@ jobs:
       run: |
         ./test
 
-    # SonarCloud scan
+    # SonarCloud Scan (FIXED)
     - name: SonarCloud Scan
-      uses: sonarsource/sonarqube-scan-action@v6
+      uses: SonarSource/sonarqube-scan-action@v6
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args: >
+          -Dsonar.projectKey=nadaabdelhaliem999-hash_university-course-registration-system
+          -Dsonar.organization=nadaabdelhaliem999-hash
