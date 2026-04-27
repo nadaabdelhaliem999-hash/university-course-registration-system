@@ -7,7 +7,7 @@ on:
 jobs:
   build-test-quality:
     runs-on: ubuntu-latest
-    
+
     steps:
     # Checkout
     - name: Checkout code
@@ -34,8 +34,8 @@ jobs:
       run: |
         ./test
 
-    # SonarCloud (NEW FIXED WAY)
-   - name: SonarCloud Scan
-  uses: sonarsource/sonarqube-scan-action@v6
-  env:
-    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    # SonarCloud scan
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarqube-scan-action@v6
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
