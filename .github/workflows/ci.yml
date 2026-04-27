@@ -7,7 +7,7 @@ on:
 jobs:
   build-test-quality:
     runs-on: ubuntu-latest
-
+    
     steps:
     # Checkout
     - name: Checkout code
