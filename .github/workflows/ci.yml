@@ -19,13 +19,16 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y g++
 
-    - name: Build application
+    - name: Download build-wrapper
       run: |
-        g++ -Iinclude src/main.cpp src/user.cpp -o app
+        curl -L -o build-wrapper-linux-x86.zip https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+        unzip build-wrapper-linux-x86.zip
+        chmod +x build-wrapper-linux-x86/build-wrapper-linux-x86
 
-    - name: Build tests
+    - name: Build with build-wrapper
       run: |
-        g++ -Iinclude tests/test.cpp src/user.cpp -o test
+        ./build-wrapper-linux-x86/build-wrapper-linux-x86 --out-dir bw-output g++ -Iinclude src/main.cpp src/user.cpp -o app
+        ./build-wrapper-linux-x86/build-wrapper-linux-x86 --out-dir bw-output g++ -Iinclude tests/test.cpp src/user.cpp -o test
 
     - name: Run unit tests
       run: |
