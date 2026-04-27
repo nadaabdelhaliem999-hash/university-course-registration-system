@@ -1,8 +1,11 @@
 #include "user.h"
-bool isValidEmail(string email) {
+
+// FIXED passing by reference
+bool isValidEmail(const string& email) {
     return email.find('@') != string::npos;
 }
 
-bool isValidPassword(string password) {
+// FIXED
+bool isValidPassword(const string& password) {
     return password.length() >= 6;
 }
