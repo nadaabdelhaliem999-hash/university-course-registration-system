@@ -9,30 +9,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
+    - name: Checkout code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: Install Dependencies
+    - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y g++ bear
+        sudo apt-get install -y g++
 
-    - name: Generate Compilation Database
+    - name: Download build-wrapper
       run: |
-        bear -- g++ -Iinclude src/main.cpp src/user.cpp -o app
-        bear --append -- g++ -Iinclude tests/test.cpp src/user.cpp -o test
+        curl -L -o build-wrapper-linux-x86.zip https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+        unzip build-wrapper-linux-x86.zip
+        chmod +x build-wrapper-linux-x86/build-wrapper-linux-x86
 
-    - name: Build Application
+    - name: Build with build-wrapper
       run: |
-        g++ -Iinclude src/main.cpp src/user.cpp -o app
+        ./build-wrapper-linux-x86/build-wrapper-linux-x86 --out-dir bw-output g++ -Iinclude src/main.cpp src/user.cpp -o app
+        ./build-wrapper-linux-x86/build-wrapper-linux-x86 --out-dir bw-output g++ -Iinclude tests/test.cpp src/user.cpp -o test
 
-    - name: Build Tests
-      run: |
-        g++ -Iinclude tests/test.cpp src/user.cpp -o test
-
-    - name: Run Unit Tests
+    - name: Run unit tests
       run: |
         ./test
 
