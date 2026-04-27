@@ -1,7 +1,9 @@
-name: CI 
+name: CI
 
 on:
   push:
+    branches: [ "main" ]
+  pull_request:
     branches: [ "main" ]
 
 jobs:
@@ -9,21 +11,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # SonarCloud needs full history
 
-    # Build
-    - name: Compile
+    # Install dependencies
+    - name: Install build tools
       run: |
-        g++ src/main.cpp src/user.cpp -Iinclude -o app
-        g++ tests/test.cpp src/user.cpp -Iinclude -o test
+        sudo apt-get update
+        sudo apt-get install -y g++ lcov
 
-    #  Test
+    # Build with coverage flags
+    - name: Compile with coverage
+      run: |
+        # Build main app
+        g++ -g -O0 -fprofile-arcs -ftest-coverage src/main.cpp src/user.cpp src/course.cpp -Iinclude -o app
+        # Build tests
+        g++ -g -O0 -fprofile-arcs -ftest-coverage tests/test.cpp src/user.cpp src/course.cpp -Iinclude -o test
+
+    # Run tests
     - name: Run tests
       run: ./test
-      
- #  SonarCloud Scan 
+
+    #  Generate coverage report
+    - name: Generate coverage
+      run: |
+        lcov --capture --directory . --output-file coverage.info --no-external
+        lcov --remove coverage.info '/usr/*' --output-file coverage.info
+        lcov --list coverage.info
+
+    #  SonarCloud Scan
     - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
+      uses: SonarSource/sonarcloud-github-action@v5.0.0  
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: https://sonarcloud.io
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
