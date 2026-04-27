@@ -9,29 +9,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 📥 Checkout code
-    - uses: actions/checkout@v3
+    # Checkout repository
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-    # Install compiler
+    #  Install compiler
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y g++
 
-    #  Build application
-    - name: Build project
+    # Build application
+    - name: Build application
       run: |
-        g++ src/main.cpp src/user.cpp src-Iinclude -o app
+        g++ -Iinclude src/main.cpp src/user.cpp -o app
 
-    #  Build and run tests
+    # Build tests
     - name: Build tests
       run: |
-        g++ tests/test.cpp src/user.cpp-Iinclude -o test
+        g++ -Iinclude tests/test.cpp src/user.cpp -o test
 
-    - name: Run tests
-      run: ./test
+    # Run tests
+    - name: Run unit tests
+      run: |
+        ./test
 
-    # 📊 SonarCloud analysis
+    #  SonarCloud analysis
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
       env:
