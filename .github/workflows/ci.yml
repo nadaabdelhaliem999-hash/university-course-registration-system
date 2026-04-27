@@ -2,35 +2,44 @@ name: CI Pipeline
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
   build-test-quality:
     runs-on: ubuntu-latest
 
     steps:
+    # Checkout code
     - name: Checkout code
       uses: actions/checkout@v4
-      fetch-depth: 0
 
+    # Install compiler
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y g++
 
+    # Build application
     - name: Build application
       run: |
         g++ -Iinclude src/main.cpp src/user.cpp -o app
 
+    # Build tests
     - name: Build tests
       run: |
         g++ -Iinclude tests/test.cpp src/user.cpp -o test
 
-    - name: Run tests
+    # Run tests
+    - name: Run unit tests
       run: |
         ./test
 
+    # SonarCloud Scan
     - name: SonarCloud Scan
       uses: SonarSource/sonarqube-scan-action@v6
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args: >
+          -Dsonar.projectKey=nadaabdelhaliem999-hash_university-course-registration-system
+          -Dsonar.organization=nadaabdelhaliem999-hash
