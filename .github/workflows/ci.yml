@@ -1,45 +1,50 @@
-name: CI Pipeline
+name: CI Pipeline - C++
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
-  build-test-quality:
+  build-and-test:
+    name: Build, Test & SonarQube Analysis
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y g++ bear
+      # ── Step 1: Get the code ──────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for SonarQube
 
-    - name: Generate compilation database with Bear
-      run: |
-        # Clean previous builds
-        rm -f app test compile_commands.json
-        
-        # Generate compilation database for both app and tests
-        bear --output compile_commands.json -- \
-          bash -c "g++ -Iinclude src/main.cpp src/user.cpp -o app && \
-                   g++ -Iinclude tests/test.cpp src/user.cpp -o test"
-        
-        # Show that compile_commands.json was created
-        echo "compile_commands.json created"
-        ls -la compile_commands.json
+      # ── Step 2: Install C++ compiler (Build Step) ─
+      - name: Install C++ compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ build-essential
 
-    - name: Run unit tests
-      run: |
-        ./test
-        echo "All tests passed"
+      # ── Step 3: Build the project ─────────────────
+      - name: Build project
+        run: |
+          g++ -Iinclude src/user.cpp src/main.cpp -o main
+          echo "Build successful!"
 
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarqube-scan-action@v5.0.0
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: https://sonarcloud.io
+      # ── Step 4: Run unit tests (Test Step) ────────
+      - name: Run unit tests
+        run: |
+          g++ -Iinclude src/user.cpp tests/test.cpp -o test_run
+          ./test_run
+
+      # ── Step 5: SonarQube scan (Quality Step) ─────
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        with:
+          args: >
+            -Dsonar.projectKey=nadaabdelhaliem999-hash_university-course-registration-system
+            -Dsonar.organization=nadaabdelhaliem999-hash
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
