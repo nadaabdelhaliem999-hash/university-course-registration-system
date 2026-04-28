@@ -17,27 +17,23 @@ bool isValidPassword(string_view password) {
 }
 
 // ─── Sprint 1: Lookup helpers ─────────────
-// FIX: Logic extracted from main() into standalone functions.
-// This eliminates nesting violations AND makes the logic unit-testable.
 
+// FIX 1: replaced manual for+if loop with std::any_of (SonarQube: "Replace for-loop by std::any_of")
 bool emailAlreadyExists(const vector<User>& users, string_view email) {
-    for (const User& user : users) {      // depth 1 inside function — fine
-        if (user.email == email) {         // depth 2 — well within limit
-            return true;
-        }
-    }
-    return false;
+    return any_of(users.begin(), users.end(),
+                  [&email](const User& user) {
+                      return user.email == email;
+                  });
 }
 
+// FIX 1 (same rule): replaced manual for+if loop with std::any_of
 bool authenticateUser(const vector<User>& users,
                       string_view email,
                       string_view password) {
-    for (const User& user : users) {                                // depth 1
-        if (user.email == email && user.password == password) {    // depth 2
-            return true;
-        }
-    }
-    return false;
+    return any_of(users.begin(), users.end(),
+                  [&email, &password](const User& user) {
+                      return user.email == email && user.password == password;
+                  });
 }
 
 // ─── Sprint 1: Action handlers ────────────
@@ -49,7 +45,7 @@ void handleRegister(vector<User>& users) {
     cout << "Enter email: ";
     getline(cin, email);
 
-    if (!isValidEmail(email)) {                // depth 1
+    if (!isValidEmail(email)) {
         cout << "ERROR: Invalid email!\n";
         return;
     }
@@ -57,12 +53,12 @@ void handleRegister(vector<User>& users) {
     cout << "Enter password (min 6 characters): ";
     getline(cin, password);
 
-    if (!isValidPassword(password)) {          // depth 1
+    if (!isValidPassword(password)) {
         cout << "ERROR: Password must be at least 6 characters!\n";
         return;
     }
 
-    if (emailAlreadyExists(users, email)) {    // depth 1  — NO nested loop here
+    if (emailAlreadyExists(users, email)) {
         cout << "ERROR: Email already registered!\n";
     } else {
         users.push_back({email, password});
@@ -80,8 +76,7 @@ void handleLogin(const vector<User>& users) {
     cout << "Enter password: ";
     getline(cin, password);
 
-    // FIX: authentication delegated to helper — no loop nested inside switch inside while
-    if (authenticateUser(users, email, password)) {   // depth 1
+    if (authenticateUser(users, email, password)) {
         cout << "SUCCESS: Welcome back " << email << "!\n";
     } else {
         cout << "ERROR: Wrong email or password!\n";
@@ -101,12 +96,12 @@ void insertSampleCourses(vector<Course>& courses) {
 }
 
 void displayCourses(const vector<Course>& courses) {
-    if (courses.empty()) {                   // depth 1
+    if (courses.empty()) {
         cout << "No courses available.\n";
         return;
     }
     cout << "\n========== AVAILABLE COURSES ==========\n";
-    for (const Course& course : courses) {   // depth 1
+    for (const Course& course : courses) {
         cout << "ID:         " << course.id         << "\n";
         cout << "Name:       " << course.name        << "\n";
         cout << "Instructor: " << course.instructor  << "\n";
@@ -120,10 +115,13 @@ void searchCourses(const vector<Course>& courses, string_view keyword) {
     bool found = false;
     cout << "\n========== SEARCH RESULTS ==========\n";
 
-    string keywordLower = string(keyword);
+    // FIX 2: changed  "string keywordLower = string(keyword)"
+    //         to      "auto keywordLower = string(keyword)"
+    // (SonarQube: "Replace the redundant type with auto")
+    auto keywordLower = string(keyword);
     transform(keywordLower.begin(), keywordLower.end(), keywordLower.begin(), ::tolower);
 
-    for (const Course& course : courses) {              // depth 1
+    for (const Course& course : courses) {
         string nameLower       = course.name;
         string instructorLower = course.instructor;
         transform(nameLower.begin(),       nameLower.end(),       nameLower.begin(),       ::tolower);
@@ -132,7 +130,7 @@ void searchCourses(const vector<Course>& courses, string_view keyword) {
         bool nameMatch       = nameLower.find(keywordLower)       != string::npos;
         bool instructorMatch = instructorLower.find(keywordLower) != string::npos;
 
-        if (nameMatch || instructorMatch) {             // depth 2 — within limit
+        if (nameMatch || instructorMatch) {
             cout << "ID:         " << course.id         << "\n";
             cout << "Name:       " << course.name        << "\n";
             cout << "Instructor: " << course.instructor  << "\n";
@@ -143,7 +141,7 @@ void searchCourses(const vector<Course>& courses, string_view keyword) {
         }
     }
 
-    if (!found) {   // depth 1
+    if (!found) {
         cout << "No courses found for: " << keyword << "\n";
     }
 }
@@ -158,7 +156,7 @@ void handleSearchCourses(const vector<Course>& courses) {
     cout << "\nEnter search keyword: ";
     getline(cin, keyword);
 
-    if (keyword.empty()) {                          // depth 1
+    if (keyword.empty()) {
         cout << "ERROR: Please enter a keyword!\n";
     } else {
         searchCourses(courses, keyword);
