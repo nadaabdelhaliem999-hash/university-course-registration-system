@@ -6,7 +6,6 @@
 using namespace std;
 
 int main() {
-    // ─── Data Storage ─────────────────────
     vector<User>   users;
     vector<Course> courses;
 
@@ -17,9 +16,6 @@ int main() {
     cout << "  University Course Registration System  \n";
     cout << "==========================================\n";
 
-    // FIX: switch cases now only call handler functions.
-    // Nesting depth inside main() never exceeds:
-    //   while(true) → switch → (nothing more here)  =  depth 2  ✅
     while (true) {                        // depth 1
         cout << "\n========== MAIN MENU ==========\n";
         cout << "1. Register\n";
@@ -51,6 +47,8 @@ int main() {
                 cout << "ERROR: Please enter 1 to 5!\n";
         }
     }
-
-    return 0;
+    // FIX 3: removed the dead "return 0;" that was here.
+    // (SonarQube: "'return' will never be executed")
+    // while(true) never exits except via "return 0" inside case 5,
+    // so any statement after the closing brace is unreachable dead code.
 }
