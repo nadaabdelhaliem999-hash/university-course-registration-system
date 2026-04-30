@@ -187,7 +187,8 @@ void test_handleSearchCourses() {
 // ══════════════════════════════════════════
 void test_registerForCourse() {
     cout << "\n--- registerForCourse ---\n";
-    vector<User> users   = {{"alice@x.com","secret",{}}};
+
+    vector<User> users = {{"alice@x.com","secret",{}}};
     vector<Course> courses;
     insertSampleCourses(courses);
     int originalCapacity = courses[0].capacity;
@@ -197,9 +198,15 @@ void test_registerForCourse() {
         string out = runWithInput("", [&](){
             registerForCourse(users, "alice@x.com", courses, 1);
         });
-        CHECK("register success",        out.find("SUCCESS") != string::npos);
-        CHECK("course added to student", users[0].enrolledCourseIds.size() == 1);
-        CHECK("capacity decreased",      courses[0].capacity == originalCapacity - 1);
+
+        CHECK("register success",
+              out.find("SUCCESS") != string::npos);
+
+        CHECK("course added to student",
+              users[0].enrolledCourseIds.size() == 1);
+
+        CHECK("capacity decreased",
+              courses[0].capacity == originalCapacity - 1);
     }
 
     // Already enrolled
@@ -207,7 +214,9 @@ void test_registerForCourse() {
         string out = runWithInput("", [&](){
             registerForCourse(users, "alice@x.com", courses, 1);
         });
-        CHECK("already enrolled error",  out.find("already registered") != string::npos);
+
+        CHECK("already enrolled error",
+              out.find("ERROR: Already registered!") != string::npos);
     }
 
     // Course not found
@@ -215,7 +224,9 @@ void test_registerForCourse() {
         string out = runWithInput("", [&](){
             registerForCourse(users, "alice@x.com", courses, 999);
         });
-        CHECK("course not found error",  out.find("Course not found") != string::npos);
+
+        CHECK("course not found error",
+              out.find("ERROR: Course not found!") != string::npos);
     }
 
     // Course full
@@ -223,10 +234,13 @@ void test_registerForCourse() {
         vector<Course> fullCourses;
         insertSampleCourses(fullCourses);
         fullCourses[0].capacity = 0;
+
         string out = runWithInput("", [&](){
             registerForCourse(users, "alice@x.com", fullCourses, 1);
         });
-        CHECK("full course rejected",    out.find("Course is full") != string::npos);
+
+        CHECK("full course rejected",
+              out.find("ERROR: Course is full!") != string::npos);
     }
 }
 
