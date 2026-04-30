@@ -61,12 +61,12 @@ void handleRegister(vector<User>& users) {
     if (emailAlreadyExists(users, email)) {
         cout << "ERROR: Email already registered!\n";
     } else {
-        users.push_back({email, password});
+        users.push_back({email, password, {}});
         cout << "SUCCESS: Registered successfully!\n";
     }
 }
 
-void handleLogin(const vector<User>& users) {
+void handleLogin(const vector<User>& users, string& loggedInEmail) {
     string email;
     string password;
 
@@ -77,6 +77,7 @@ void handleLogin(const vector<User>& users) {
     getline(cin, password);
 
     if (authenticateUser(users, email, password)) {
+        loggedInEmail = email;
         cout << "SUCCESS: Welcome back " << email << "!\n";
     } else {
         cout << "ERROR: Wrong email or password!\n";
@@ -161,4 +162,147 @@ void handleSearchCourses(const vector<Course>& courses) {
     } else {
         searchCourses(courses, keyword);
     }
+}
+
+// ─── Sprint 3: Registration & Schedule ────
+
+bool registerForCourse(vector<User>& users,
+                       string_view email,
+                       vector<Course>& courses,
+                       int courseId) {
+    // Find the course
+    auto courseIt = find_if(courses.begin(), courses.end(),
+                            [courseId](const Course& c) { return c.id == courseId; });
+
+    if (courseIt == courses.end()) {
+        cout << "ERROR: Course not found!\n";
+        return false;
+    }
+
+    if (courseIt->capacity <= 0) {
+        cout << "ERROR: Course is full!\n";
+        return false;
+    }
+
+    // Find the user
+    auto userIt = find_if(users.begin(), users.end(),
+                          [&email](const User& u) { return u.email == email; });
+
+    if (userIt == users.end()) {
+        cout << "ERROR: User not found!\n";
+        return false;
+    }
+
+    // Check if already enrolled
+    bool alreadyEnrolled = any_of(userIt->enrolledCourseIds.begin(),
+                                  userIt->enrolledCourseIds.end(),
+                                  [courseId](int id) { return id == courseId; });
+
+    if (alreadyEnrolled) {
+        cout << "ERROR: You are already registered in this course!\n";
+        return false;
+    }
+
+    // Link student with course and reduce capacity
+    userIt->enrolledCourseIds.push_back(courseId);
+    courseIt->capacity--;
+    cout << "SUCCESS: Registered for " << courseIt->name << "!\n";
+    return true;
+}
+
+bool dropCourse(vector<User>& users,
+                string_view email,
+                vector<Course>& courses,
+                int courseId) {
+    // Find the user
+    auto userIt = find_if(users.begin(), users.end(),
+                          [&email](const User& u) { return u.email == email; });
+
+    if (userIt == users.end()) {
+        cout << "ERROR: User not found!\n";
+        return false;
+    }
+
+    // Find the course ID in the student's enrolled list
+    auto idIt = find(userIt->enrolledCourseIds.begin(),
+                     userIt->enrolledCourseIds.end(),
+                     courseId);
+
+    if (idIt == userIt->enrolledCourseIds.end()) {
+        cout << "ERROR: You are not registered in this course!\n";
+        return false;
+    }
+
+    // Remove course from student schedule and restore capacity
+    userIt->enrolledCourseIds.erase(idIt);
+
+    auto courseIt = find_if(courses.begin(), courses.end(),
+                            [courseId](const Course& c) { return c.id == courseId; });
+
+    if (courseIt != courses.end()) {
+        courseIt->capacity++;
+    }
+
+    cout << "SUCCESS: Course dropped from your schedule!\n";
+    return true;
+}
+
+void viewSchedule(const vector<User>& users,
+                  string_view email,
+                  const vector<Course>& courses) {
+    auto userIt = find_if(users.begin(), users.end(),
+                          [&email](const User& u) { return u.email == email; });
+
+    if (userIt == users.end()) {
+        cout << "ERROR: User not found!\n";
+        return;
+    }
+
+    if (userIt->enrolledCourseIds.empty()) {
+        cout << "You have no courses in your schedule.\n";
+        return;
+    }
+
+    cout << "\n========== MY SCHEDULE ==========\n";
+    for (int id : userIt->enrolledCourseIds) {
+        auto courseIt = find_if(courses.begin(), courses.end(),
+                                [id](const Course& c) { return c.id == id; });
+
+        if (courseIt != courses.end()) {
+            cout << "ID:         " << courseIt->id         << "\n";
+            cout << "Name:       " << courseIt->name        << "\n";
+            cout << "Instructor: " << courseIt->instructor  << "\n";
+            cout << "Schedule:   " << courseIt->schedule    << "\n";
+            cout << "---------------------------------------\n";
+        }
+    }
+}
+
+// ─── Sprint 3: Action handlers ────────────
+void handleRegisterForCourse(vector<User>& users,
+                              string_view loggedInEmail,
+                              vector<Course>& courses) {
+    displayCourses(courses);
+    cout << "Enter course ID to register: ";
+    int courseId;
+    cin >> courseId;
+    cin.ignore();
+    registerForCourse(users, loggedInEmail, courses, courseId);
+}
+
+void handleDropCourse(vector<User>& users,
+                      string_view loggedInEmail,
+                      vector<Course>& courses) {
+    viewSchedule(users, loggedInEmail, courses);
+    cout << "Enter course ID to drop: ";
+    int courseId;
+    cin >> courseId;
+    cin.ignore();
+    dropCourse(users, loggedInEmail, courses, courseId);
+}
+
+void handleViewSchedule(const vector<User>& users,
+                        string_view loggedInEmail,
+                        const vector<Course>& courses) {
+    viewSchedule(users, loggedInEmail, courses);
 }
