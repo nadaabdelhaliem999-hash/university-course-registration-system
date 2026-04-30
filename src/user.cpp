@@ -170,44 +170,49 @@ bool registerForCourse(vector<User>& users,
                        string_view email,
                        vector<Course>& courses,
                        int courseId) {
-    // Find the course
-    auto courseIt = find_if(courses.begin(), courses.end(),
-                            [courseId](const Course& c) { return c.id == courseId; });
 
-    if (courseIt == courses.end()) {
+    // SonarQube fix: Find the course using if-init
+    if (auto courseIt = find_if(courses.begin(), courses.end(),
+                               [courseId](const Course& c) { return c.id == courseId; });
+        courseIt == courses.end()) {
+
         cout << "ERROR: Course not found!\n";
         return false;
+
+    } else {
+
+        if (courseIt->capacity <= 0) {
+            cout << "ERROR: Course is full!\n";
+            return false;
+        }
+
+        // Find the user
+        auto userIt = find_if(users.begin(), users.end(),
+                              [&email](const User& u) { return u.email == email; });
+
+        if (userIt == users.end()) {
+            cout << "ERROR: User not found!\n";
+            return false;
+        }
+
+        // Check if already enrolled
+        // SonarQube fix: Moved 'alreadyEnrolled' inside the if-statement
+        if (bool alreadyEnrolled = any_of(userIt->enrolledCourseIds.begin(),
+                                         userIt->enrolledCourseIds.end(),
+                                         [courseId](int id) { return id == courseId; });
+            alreadyEnrolled) {
+
+            cout << "ERROR: Already registered!\n";
+            return false;
+        }
+
+        // Link student with course and reduce capacity
+        userIt->enrolledCourseIds.push_back(courseId);
+        courseIt->capacity--;
+
+        cout << "SUCCESS: Registered for " << courseIt->name << "!\n";
+        return true;
     }
-
-    if (courseIt->capacity <= 0) {
-        cout << "ERROR: Course is full!\n";
-        return false;
-    }
-
-    // Find the user
-    auto userIt = find_if(users.begin(), users.end(),
-                          [&email](const User& u) { return u.email == email; });
-
-    if (userIt == users.end()) {
-        cout << "ERROR: User not found!\n";
-        return false;
-    }
-
-    // Check if already enrolled
-    bool alreadyEnrolled = any_of(userIt->enrolledCourseIds.begin(),
-                                  userIt->enrolledCourseIds.end(),
-                                  [courseId](int id) { return id == courseId; });
-
-    if (alreadyEnrolled) {
-        cout << "ERROR: You are already registered in this course!\n";
-        return false;
-    }
-
-    // Link student with course and reduce capacity
-    userIt->enrolledCourseIds.push_back(courseId);
-    courseIt->capacity--;
-    cout << "SUCCESS: Registered for " << courseIt->name << "!\n";
-    return true;
 }
 
 bool dropCourse(vector<User>& users,
