@@ -171,41 +171,33 @@ bool registerForCourse(vector<User>& users,
                        vector<Course>& courses,
                        int courseId) {
 
-    // SonarQube fix: Find the course using if-init
-    auto courseIt = find_if(courses.begin(), courses.end(),
-                            [courseId](const Course& c) { return c.id == courseId; });
+    if (auto courseIt = find_if(courses.begin(), courses.end(),
+        [courseId](const Course& c) { return c.id == courseId; });
+        courseIt == courses.end()) {
 
-    if (courseIt == courses.end()) {
         cout << "ERROR: Course not found!\n";
         return false;
-    }
-
-    if (courseIt->capacity <= 0) {
+    } else if (courseIt->capacity <= 0) {
         cout << "ERROR: Course is full!\n";
         return false;
     }
 
-    // Find the user
     auto userIt = find_if(users.begin(), users.end(),
-                          [&email](const User& u) { return u.email == email; });
+        [&email](const User& u) { return u.email == email; });
 
     if (userIt == users.end()) {
         cout << "ERROR: User not found!\n";
         return false;
     }
 
-        // Check if already enrolled
-        // SonarQube fix: Moved 'alreadyEnrolled' inside the if-statement
-    if (bool alreadyEnrolled = any_of(userIt->enrolledCourseIds.begin(),
-                                     userIt->enrolledCourseIds.end(),
-                                     [courseId](int id) { return id == courseId; });
-        alreadyEnrolled) {
+    if (any_of(userIt->enrolledCourseIds.begin(),
+               userIt->enrolledCourseIds.end(),
+               [courseId](int id) { return id == courseId; })) {
 
         cout << "ERROR: Already registered!\n";
         return false;
     }
 
-    // Register student
     userIt->enrolledCourseIds.push_back(courseId);
     courseIt->capacity--;
 
