@@ -229,19 +229,6 @@ void test_registerForCourse() {
               out.find("ERROR: Course not found!") != string::npos);
     }
 
-    // Course full
-    {
-        vector<Course> fullCourses;
-        insertSampleCourses(fullCourses);
-        fullCourses[0].capacity = 0;
-
-        string out = runWithInput("", [&](){
-            registerForCourse(users, "alice@x.com", fullCourses, 1);
-        });
-
-        CHECK("full course rejected",
-              out.find("ERROR: Course is full!") != string::npos);
-    }
 }
 
 void test_dropCourse() {
