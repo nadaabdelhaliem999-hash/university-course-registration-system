@@ -167,26 +167,11 @@ void handleSearchCourses(const vector<Course>& courses) {
 // ─── Sprint 3: Registration & Schedule ────
 
 bool registerForCourse(vector<User>& users,
-                       string_view email,
-                       vector<Course>& courses,
-                       int courseId) {
+    const string& email,
+    vector<Course>& courses,
+    int courseId) {
 
-    // Not using if-init (C++17) because courseIt is reused later in function scope
-    // so SonarQube issue still exist
-    auto courseIt = find_if(courses.begin(), courses.end(),
-        [courseId](const Course& c) { return c.id == courseId; });
-
-    if (courseIt == courses.end()) {
-        cout << "ERROR: Course not found!\n";
-        return false;
-    }
-
-    if (courseIt->capacity <= 0) {
-        cout << "ERROR: Course is full!\n";
-        return false;
-    }
-
-    // Find the user
+    // Find user
     auto userIt = find_if(users.begin(), users.end(),
         [&email](const User& u) { return u.email == email; });
 
@@ -195,25 +180,39 @@ bool registerForCourse(vector<User>& users,
         return false;
     }
 
-    // Check if already enrolled
-    // SonarQube fix: kept variable for readability and reuse clarity
-    bool alreadyEnrolled = any_of(userIt->enrolledCourseIds.begin(),
-        userIt->enrolledCourseIds.end(),
-        [courseId](int id) { return id == courseId; });
+    // Fix 3: init-statement for alreadyEnrolled (SonarQube)
+    if (bool alreadyEnrolled = any_of(userIt->enrolledCourseIds.begin(),
+            userIt->enrolledCourseIds.end(),
+            [courseId](int id) { return id == courseId; });
+        alreadyEnrolled) {
 
-    if (alreadyEnrolled) {
         cout << "ERROR: Already registered!\n";
         return false;
     }
 
-    // Register student
-    userIt->enrolledCourseIds.push_back(courseId);
-    courseIt->capacity--;
+    // Fix 4: init-statement for courseIt (SonarQube)
+    if (auto courseIt = find_if(courses.begin(), courses.end(),
+            [courseId](const Course& c) { return c.id == courseId; });
+        courseIt != courses.end()) {
 
-    cout << "SUCCESS: Registered for " << courseIt->name << "!\n";
-    return true;
+        // ✅ Check capacity (REQUIRED by tests)
+        if (courseIt->capacity <= 0) {
+            cout << "ERROR: Course is full!\n";
+            return false;
+        }
+
+        // ✅ Perform registration
+        userIt->enrolledCourseIds.push_back(courseId);
+        courseIt->capacity--;
+
+        cout << "SUCCESS: Registered for course!\n";
+        return true;
+    }
+
+    // Course not found
+    cout << "ERROR: Course not found!\n";
+    return false;
 }
-
 
 bool dropCourse(vector<User>& users,
                 string_view email,
