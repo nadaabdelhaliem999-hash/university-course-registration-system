@@ -194,13 +194,13 @@ bool registerForCourse(std::vector<User>& users,
             [courseId](const Course& c) { return c.id == courseId; });
         courseIt != courses.end()) {
 
-        // ✅ Check capacity (REQUIRED by tests)
+        // Check capacity (REQUIRED by tests)
         if (courseIt->capacity <= 0) {
             cout << "ERROR: Course is full!\n";
             return false;
         }
 
-        // ✅ Perform registration
+        //  Perform registration
         userIt->enrolledCourseIds.push_back(courseId);
         courseIt->capacity--;
 
@@ -239,12 +239,12 @@ bool dropCourse(vector<User>& users,
     // Remove course from student schedule and restore capacity
     userIt->enrolledCourseIds.erase(idIt);
 
-    auto courseIt = find_if(courses.begin(), courses.end(),
-                            [courseId](const Course& c) { return c.id == courseId; });
+    if (auto courseIt = find_if(courses.begin(), courses.end(),
+        [courseId](const Course& c) { return c.id == courseId; });
+    courseIt != courses.end()) {
 
-    if (courseIt != courses.end()) {
-        courseIt->capacity++;
-    }
+    courseIt->capacity++;
+}
 
     cout << "SUCCESS: Course dropped from your schedule!\n";
     return true;
