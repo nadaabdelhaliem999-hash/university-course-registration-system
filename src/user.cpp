@@ -166,11 +166,10 @@ void handleSearchCourses(const vector<Course>& courses) {
 
 // ─── Sprint 3: Registration & Schedule ────
 
-bool registerForCourse(vector<User>& users,
-    const string& email,
-    vector<Course>& courses,
-    int courseId) {
-
+bool registerForCourse(std::vector<User>& users,
+                       std::string_view email,
+                       std::vector<Course>& courses,
+                       int courseId){
     // Find user
     auto userIt = find_if(users.begin(), users.end(),
         [&email](const User& u) { return u.email == email; });
