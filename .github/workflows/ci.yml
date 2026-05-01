@@ -13,7 +13,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -24,10 +23,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y g++ build-essential bear
 
-       - name: Build project
-         run: |
-           bear -- g++ -std=c++17 -Iinclude src/user.cpp src/main.cpp -o main
-           echo "Build successful!"
+      - name: Build project   # ← FIXED INDENTATION
+        run: |
+          bear -- g++ -std=c++17 -Iinclude src/user.cpp src/main.cpp -o main
+          echo "Build successful!"
 
       - name: Verify compile_commands.json exists
         run: |
@@ -36,8 +35,8 @@ jobs:
 
       - name: Run unit tests
         run: |
-         g++ -std=c++17 -Iinclude src/user.cpp tests/test.cpp -o test_run
-         ./test_run
+          g++ -std=c++17 -Iinclude src/user.cpp tests/test.cpp -o test_run
+          ./test_run
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
