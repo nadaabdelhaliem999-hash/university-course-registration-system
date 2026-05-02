@@ -514,6 +514,7 @@ int main() {
     test_handleRegisterForCourse();
     test_handleDropCourse();
     test_handleViewSchedule();
+    test_extraCoverage();
 
     cout << "\n=====================================\n";
     cout << "Results: " << passed << " passed, " << failed << " failed\n";
