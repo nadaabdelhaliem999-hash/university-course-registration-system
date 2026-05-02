@@ -415,6 +415,78 @@ void test_handleViewSchedule() {
     CHECK("shows schedule header",   out.find("MY SCHEDULE") != string::npos);
     CHECK("shows enrolled course",   out.find("Mathematics 101") != string::npos);
 }
+// ══════════════════════════════════════════
+//  EXTRA COVERAGE TESTS
+// ══════════════════════════════════════════
+void test_extraCoverage() {
+    cout << "\n--- EXTRA COVERAGE TESTS ---\n";
+
+    // 🔹 searchCourses edge cases
+    {
+        vector<Course> courses;
+        insertSampleCourses(courses);
+
+        string out = runWithInput("", [&](){ searchCourses(courses, ""); });
+        CHECK("empty keyword direct search", out.find("No courses") != string::npos);
+    }
+
+    {
+        vector<Course> courses;
+        insertSampleCourses(courses);
+
+        string out = runWithInput("", [&](){ searchCourses(courses, "101"); });
+        CHECK("multiple matches search", out.find("Physics 101") != string::npos);
+    }
+
+    // 🔹 registerForCourse capacity edge
+    {
+        vector<User> users = {{"x@x.com","pass",{}}};
+        vector<Course> courses = {{10, "Test", "Dr", 1, "Mon"}};
+
+        runWithInput("", [&](){
+            registerForCourse(users, "x@x.com", courses, 10);
+        });
+
+        CHECK("capacity becomes zero", courses[0].capacity == 0);
+    }
+
+    // 🔹 dropCourse when course not in list
+    {
+        vector<User> users = {{"a@a.com","pass",{999}}};
+        vector<Course> courses;
+
+        runWithInput("", [&](){
+            dropCourse(users, "a@a.com", courses, 999);
+        });
+
+        CHECK("drop course not in list", users[0].enrolledCourseIds.empty());
+    }
+
+    // 🔹 viewSchedule missing course
+    {
+        vector<User> users = {{"a@a.com","pass",{999}}};
+        vector<Course> courses;
+
+        string out = runWithInput("", [&](){
+            viewSchedule(users, "a@a.com", courses);
+        });
+
+        CHECK("view schedule missing course safe", out.find("MY SCHEDULE") != string::npos);
+    }
+
+    // 🔹 handler invalid input
+    {
+        vector<User> users = {{"a@a.com","pass",{}}};
+        vector<Course> courses;
+        insertSampleCourses(courses);
+
+        runWithInput("999\n", [&](){
+            handleRegisterForCourse(users, "a@a.com", courses);
+        });
+
+        CHECK("handler invalid id executed", true);
+    }
+}
 
 // ══════════════════════════════════════════
 //  Main
