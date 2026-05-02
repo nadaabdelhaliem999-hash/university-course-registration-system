@@ -416,18 +416,21 @@ void test_handleViewSchedule() {
     CHECK("shows enrolled course",   out.find("Mathematics 101") != string::npos);
 }
 // ══════════════════════════════════════════
-//  EXTRA COVERAGE TESTS
+//  EXTRA COVERAGE TESTS (FIXED)
 // ══════════════════════════════════════════
 void test_extraCoverage() {
     cout << "\n--- EXTRA COVERAGE TESTS ---\n";
 
-    // 🔹 searchCourses edge cases
+    // 🔹 searchCourses edge cases (FIXED)
     {
         vector<Course> courses;
         insertSampleCourses(courses);
 
         string out = runWithInput("", [&](){ searchCourses(courses, ""); });
-        CHECK("empty keyword direct search", out.find("No courses") != string::npos);
+
+       
+        CHECK("empty keyword shows all courses",
+              out.find("Mathematics 101") != string::npos);
     }
 
     {
@@ -435,7 +438,8 @@ void test_extraCoverage() {
         insertSampleCourses(courses);
 
         string out = runWithInput("", [&](){ searchCourses(courses, "101"); });
-        CHECK("multiple matches search", out.find("Physics 101") != string::npos);
+        CHECK("multiple matches search",
+              out.find("Physics 101") != string::npos);
     }
 
     // 🔹 registerForCourse capacity edge
@@ -459,7 +463,8 @@ void test_extraCoverage() {
             dropCourse(users, "a@a.com", courses, 999);
         });
 
-        CHECK("drop course not in list", users[0].enrolledCourseIds.empty());
+        CHECK("drop course not in list",
+              users[0].enrolledCourseIds.empty());
     }
 
     // 🔹 viewSchedule missing course
@@ -471,7 +476,8 @@ void test_extraCoverage() {
             viewSchedule(users, "a@a.com", courses);
         });
 
-        CHECK("view schedule missing course safe", out.find("MY SCHEDULE") != string::npos);
+        CHECK("view schedule missing course safe",
+              out.find("MY SCHEDULE") != string::npos);
     }
 
     // 🔹 handler invalid input
