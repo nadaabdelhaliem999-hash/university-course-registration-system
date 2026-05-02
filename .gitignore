@@ -1,0 +1,8 @@
+*.o
+*.gcda
+*.gcno
+main
+test_run
+coverage.xml
+compile_commands.json
+.scannerwork/
