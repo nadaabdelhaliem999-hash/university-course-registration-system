@@ -13,44 +13,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
+      # Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install C++ compiler and tools
+      # Install tools
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++ build-essential bear gcovr
+          sudo apt-get install -y g++ gcovr
 
-      - name: Build project
-        run: |
-          bear -- g++ -std=c++17 -Iinclude src/user.cpp src/main.cpp -o main
-          echo "Build successful!"
-
-      - name: Verify compile_commands.json exists
-        run: |
-          ls -la compile_commands.json
-          echo "compile_commands.json found!"
-
-      - name: Run unit tests with coverage
+      # Build and run tests with coverage
+      - name: Build and run tests with coverage
         run: |
           g++ -std=c++17 -Iinclude \
               --coverage -fprofile-arcs -ftest-coverage \
               src/user.cpp tests/test.cpp \
               -o test_run
+
           ./test_run
 
+      # Generate coverage report for SonarQube
       - name: Generate coverage report
         run: |
           gcovr --sonarqube coverage.xml \
                 --root . \
+                --object-directory . \
+                --filter src/ \
                 --exclude tests/ \
-                --exclude main.cpp
-          echo "Coverage report generated!"
+                --exclude ".*main.cpp" \
+                --branches \
+                --print-summary
+
+          echo "Coverage report:"
           cat coverage.xml
 
+      # SonarQube scan
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
