@@ -13,17 +13,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install C++ compiler and bear
+      - name: Install C++ compiler and tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++ build-essential bear
+          sudo apt-get install -y g++ build-essential bear gcovr
 
-      - name: Build project   # ← FIXED INDENTATION
+      - name: Build project
         run: |
           bear -- g++ -std=c++17 -Iinclude src/user.cpp src/main.cpp -o main
           echo "Build successful!"
@@ -33,10 +34,22 @@ jobs:
           ls -la compile_commands.json
           echo "compile_commands.json found!"
 
-      - name: Run unit tests
+      - name: Run unit tests with coverage
         run: |
-          g++ -std=c++17 -Iinclude src/user.cpp tests/test.cpp -o test_run
+          g++ -std=c++17 -Iinclude \
+              --coverage -fprofile-arcs -ftest-coverage \
+              src/user.cpp tests/test.cpp \
+              -o test_run
           ./test_run
+
+      - name: Generate coverage report
+        run: |
+          gcovr --sonarqube coverage.xml \
+                --root . \
+                --exclude tests/ \
+                --exclude main.cpp
+          echo "Coverage report generated!"
+          cat coverage.xml
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
