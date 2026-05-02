@@ -18,8 +18,8 @@ jobs:
 
       - name: Compile with coverage
         run: |
-          g++ -std=c++17 -fprofile-arcs -ftest-coverage \
-          src/*.cpp tests/test.cpp -Iinclude -o test_run
+         g++ -std=c++17 -fprofile-arcs -ftest-coverage \
+         src/user.cpp tests/test.cpp -Iinclude -o test_run
 
       - name: Run tests
         run: ./test_run
