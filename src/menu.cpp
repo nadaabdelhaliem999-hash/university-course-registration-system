@@ -7,7 +7,7 @@ using namespace std;
 
 bool handleGuestMenu(int choice,
                      vector<User>& users,
-                    const vector<Course>& courses,
+                     const vector<Course>& courses,
                      string& loggedInEmail) {
     switch (choice) {
         case 1:
@@ -33,7 +33,7 @@ bool handleGuestMenu(int choice,
 
 bool handleLoggedInMenu(int choice,
                         vector<User>& users,
-                        vector<Course>& courses,
+                        const vector<Course>& courses,
                         string& loggedInEmail) {
     switch (choice) {
         case 1:
