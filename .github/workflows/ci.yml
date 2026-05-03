@@ -26,7 +26,9 @@ jobs:
 
       - name: Build project
         run: |
-          bear -- g++ -std=c++17 -Iinclude src/user.cpp src/main.cpp -o main
+          bear -- g++ -std=c++17 -Iinclude \
+            src/user.cpp src/menu.cpp src/main.cpp \
+            -o main
           echo "Build successful!"
 
       - name: Verify compile_commands.json exists
@@ -38,7 +40,7 @@ jobs:
         run: |
           g++ -std=c++17 -Iinclude \
               --coverage -fprofile-arcs -ftest-coverage \
-              src/user.cpp tests/test.cpp \
+              src/user.cpp src/menu.cpp tests/test.cpp \
               -o test_run
           ./test_run
 
@@ -47,9 +49,8 @@ jobs:
           gcovr --sonarqube coverage.xml \
                 --root . \
                 --exclude tests/ \
-                --exclude main.cpp
+                --exclude src/main.cpp
           echo "Coverage report generated!"
-          cat coverage.xml
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
