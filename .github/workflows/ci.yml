@@ -49,7 +49,7 @@ jobs:
           gcovr --sonarqube coverage.xml \
                 --root . \
                 --exclude tests/ \
-                --exclude src/main.cpp
+                
           echo "Coverage report generated!"
 
       - name: SonarQube Scan
