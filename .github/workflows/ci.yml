@@ -43,7 +43,7 @@ jobs:
               src/user.cpp src/menu.cpp tests/test.cpp \
               -o test_run
           ./test_run
-
+          
       - name: Generate coverage report
         run: |
           gcovr --sonarqube coverage.xml \
