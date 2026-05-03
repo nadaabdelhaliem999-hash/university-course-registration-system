@@ -33,7 +33,7 @@ bool handleGuestMenu(int choice,
 
 bool handleLoggedInMenu(int choice,
                         vector<User>& users,
-                        const vector<Course>& courses,
+                        vector<Course>& courses,
                         string& loggedInEmail) {
     switch (choice) {
         case 1:
