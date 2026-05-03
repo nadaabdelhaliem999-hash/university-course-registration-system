@@ -61,7 +61,7 @@ void handleViewSchedule(const std::vector<User>& users,
 // ─── Menu handlers (in main.cpp) ──────────
 bool handleGuestMenu(int choice,
                      std::vector<User>& users,
-                     std::vector<Course>& courses,
+                     const std::vector<Course>& courses,
                      std::string& loggedInEmail);
 
 bool handleLoggedInMenu(int choice,
