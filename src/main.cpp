@@ -8,16 +8,17 @@ using namespace std;
 int main() {
     vector<User>   users;
     vector<Course> courses;
-    string loggedInEmail = "";   // empty means no one is logged in
+    string loggedInEmail = "";
 
     insertSampleCourses(courses);
 
     int choice;
+
     cout << "==========================================\n";
     cout << "  University Course Registration System  \n";
     cout << "==========================================\n";
 
-    while (true) {                        // depth 1
+    while (true) {
         cout << "\n========== MAIN MENU ==========\n";
 
         if (loggedInEmail.empty()) {
@@ -41,57 +42,15 @@ int main() {
         cin >> choice;
         cin.ignore();
 
-        if (loggedInEmail.empty()) {       // depth 2
-            switch (choice) {              // depth 3 — max allowed ✅
-                case 1:
-                    handleRegister(users);
-                    break;
-                case 2:
-                    handleLogin(users, loggedInEmail);
-                    break;
-                case 3:
-                    handleViewCourses(courses);
-                    break;
-                case 4:
-                    handleSearchCourses(courses);
-                    break;
-                case 5:
-                    cout << "Goodbye!\n";
-                    return 0;
-                default:
-                    cout << "ERROR: Invalid choice!\n";
-            }
-            // FIX 3: removed the dead "return 0;" that was here.
-            // (SonarQube: "'return' will never be executed")
-            // while(true) never exits except via "return 0" inside case 5,
-            // so any statement after the closing brace is unreachable dead code.
+        bool continueLoop;
+        if (loggedInEmail.empty()) {
+            continueLoop = handleGuestMenu(choice, users, courses, loggedInEmail);
         } else {
-            switch (choice) {              // depth 3 — max allowed ✅
-                case 1:
-                    handleViewCourses(courses);
-                    break;
-                case 2:
-                    handleSearchCourses(courses);
-                    break;
-                case 3:
-                    handleRegisterForCourse(users, loggedInEmail, courses);
-                    break;
-                case 4:
-                    handleDropCourse(users, loggedInEmail, courses);
-                    break;
-                case 5:
-                    handleViewSchedule(users, loggedInEmail, courses);
-                    break;
-                case 6:
-                    cout << "Logged out successfully!\n";
-                    loggedInEmail = "";
-                    break;
-                case 7:
-                    cout << "Goodbye!\n";
-                    return 0;
-                default:
-                    cout << "ERROR: Invalid choice!\n";
-            }
+            continueLoop = handleLoggedInMenu(choice, users, courses, loggedInEmail);
+        }
+
+        if (!continueLoop) {
+            return 0;
         }
     }
 }
