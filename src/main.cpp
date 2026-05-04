@@ -13,14 +13,12 @@ int main() {
     insertSampleCourses(courses);
 
     int choice;
-
     cout << "==========================================\n";
     cout << "  University Course Registration System  \n";
     cout << "==========================================\n";
 
     while (true) {
         cout << "\n========== MAIN MENU ==========\n";
-
         if (loggedInEmail.empty()) {
             cout << "1. Register\n";
             cout << "2. Login\n";
@@ -37,7 +35,6 @@ int main() {
             cout << "6. Logout\n";
             cout << "7. Exit\n";
         }
-
         cout << "Enter your choice: ";
         cin >> choice;
         cin.ignore();
@@ -48,7 +45,6 @@ int main() {
         } else {
             continueLoop = handleLoggedInMenu(choice, users, courses, loggedInEmail);
         }
-
         if (!continueLoop) {
             return 0;
         }
