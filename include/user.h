@@ -5,7 +5,6 @@
 #include <string_view>
 #include <vector>
 
-// ─── Sprint 1: User ───────────────────────
 struct User {
     std::string email;
     std::string password;
@@ -21,7 +20,6 @@ bool authenticateUser(const std::vector<User>& users,
 void handleRegister(std::vector<User>& users);
 void handleLogin(const std::vector<User>& users, std::string& loggedInEmail);
 
-// ─── Sprint 2: Course ─────────────────────
 struct Course {
     int         id;
     std::string name;
@@ -36,7 +34,6 @@ void searchCourses(const std::vector<Course>& courses, std::string_view keyword)
 void handleViewCourses(const std::vector<Course>& courses);
 void handleSearchCourses(const std::vector<Course>& courses);
 
-// ─── Sprint 3: Registration & Schedule ────
 bool registerForCourse(std::vector<User>& users,
                        std::string_view email,
                        std::vector<Course>& courses,
@@ -58,12 +55,10 @@ void handleViewSchedule(const std::vector<User>& users,
                         std::string_view loggedInEmail,
                         const std::vector<Course>& courses);
 
-// ─── Menu handlers (in main.cpp) ──────────
 bool handleGuestMenu(int choice,
                      std::vector<User>& users,
                      const std::vector<Course>& courses,
                      std::string& loggedInEmail);
-
 bool handleLoggedInMenu(int choice,
                         std::vector<User>& users,
                         std::vector<Course>& courses,
