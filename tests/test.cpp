@@ -169,23 +169,27 @@ void test_searchCourses() {
     insertSampleCourses(courses);
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "math"); });
-        CHECK("finds by name",       out.find("Mathematics 101") != string::npos);
+        CHECK("finds by name only",       out.find("Mathematics 101") != string::npos);
     }
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "MATH"); });
-        CHECK("case insensitive",    out.find("Mathematics 101") != string::npos);
+        CHECK("case insensitive",         out.find("Mathematics 101") != string::npos);
     }
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "ahmed"); });
-        CHECK("finds by instructor", out.find("Dr. Ahmed") != string::npos);
+        CHECK("finds by instructor only", out.find("Dr. Ahmed") != string::npos);
     }
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "xyznotfound"); });
-        CHECK("no results message",  out.find("No courses found") != string::npos);
+        CHECK("no results message",       out.find("No courses found") != string::npos);
     }
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "101"); });
-        CHECK("partial match works", out.find("Mathematics 101") != string::npos);
+        CHECK("partial match works",      out.find("Mathematics 101") != string::npos);
+    }
+    {
+        string out = runWithInput("", [&](){ searchCourses(courses, "science"); });
+        CHECK("finds computer science",   out.find("Computer Science") != string::npos);
     }
 }
 
@@ -203,15 +207,15 @@ void test_handleSearchCourses() {
     insertSampleCourses(courses);
     {
         string out = runWithInput("math\n", [&](){ handleSearchCourses(courses); });
-        CHECK("valid search works",  out.find("Mathematics 101") != string::npos);
+        CHECK("valid search works",   out.find("Mathematics 101") != string::npos);
     }
     {
         string out = runWithInput("\n", [&](){ handleSearchCourses(courses); });
-        CHECK("empty keyword error", out.find("Please enter a keyword") != string::npos);
+        CHECK("empty keyword error",  out.find("Please enter a keyword") != string::npos);
     }
     {
         string out = runWithInput("sara\n", [&](){ handleSearchCourses(courses); });
-        CHECK("search by instructor",out.find("Dr. Sara") != string::npos);
+        CHECK("search by instructor", out.find("Dr. Sara") != string::npos);
     }
 }
 
@@ -346,7 +350,7 @@ void test_handleDropCourse() {
     vector<Course> courses;
     insertSampleCourses(courses);
     runWithInput("1\n", [&](){ handleDropCourse(users, "alice@x.com", courses); });
-    CHECK("dropped via handler",      users[0].enrolledCourseIds.empty());
+    CHECK("dropped via handler", users[0].enrolledCourseIds.empty());
 }
 
 void test_handleViewSchedule() {
@@ -357,8 +361,8 @@ void test_handleViewSchedule() {
     string out = runWithInput("", [&](){
         handleViewSchedule(users, "alice@x.com", courses);
     });
-    CHECK("shows schedule header",    out.find("MY SCHEDULE") != string::npos);
-    CHECK("shows enrolled course",    out.find("Mathematics 101") != string::npos);
+    CHECK("shows schedule header",  out.find("MY SCHEDULE") != string::npos);
+    CHECK("shows enrolled course",  out.find("Mathematics 101") != string::npos);
 }
 
 void test_handleGuestMenu() {
@@ -481,6 +485,54 @@ void test_handleLoggedInMenu() {
     }
 }
 
+void test_runApp() {
+    cout << "\n--- runApp ---\n";
+    {
+        vector<User>   users;
+        vector<Course> courses;
+        insertSampleCourses(courses);
+        string out = runWithInput("5\n", [&](){
+            runApp(users, courses);
+        });
+        CHECK("runApp exits on 5",       out.find("Goodbye") != string::npos);
+    }
+    {
+        vector<User>   users;
+        vector<Course> courses;
+        insertSampleCourses(courses);
+        string out = runWithInput(
+            "1\nalice@x.com\nsecret123\n"
+            "2\nalice@x.com\nsecret123\n"
+            "7\n",
+            [&](){ runApp(users, courses); });
+        CHECK("runApp register then login", out.find("Welcome back") != string::npos);
+    }
+    {
+        vector<User>   users;
+        vector<Course> courses;
+        insertSampleCourses(courses);
+        string out = runWithInput(
+            "1\nalice@x.com\nsecret123\n"
+            "2\nalice@x.com\nsecret123\n"
+            "3\n1\n"
+            "4\n1\n"
+            "5\n"
+            "6\n"
+            "5\n",
+            [&](){ runApp(users, courses); });
+        CHECK("runApp full flow works",     out.find("Logged out") != string::npos);
+    }
+    {
+        vector<User>   users;
+        vector<Course> courses;
+        insertSampleCourses(courses);
+        string out = runWithInput("99\n5\n", [&](){
+            runApp(users, courses);
+        });
+        CHECK("runApp invalid then exit",   out.find("Invalid choice") != string::npos);
+    }
+}
+
 int main() {
     cout << "========== SPRINT 1 TESTS ==========\n";
     test_isValidEmail();
@@ -505,9 +557,10 @@ int main() {
     test_handleDropCourse();
     test_handleViewSchedule();
 
-    cout << "\n========== MAIN.CPP MENU TESTS ==========\n";
+    cout << "\n========== MENU TESTS ==========\n";
     test_handleGuestMenu();
     test_handleLoggedInMenu();
+    test_runApp();
 
     cout << "\n=====================================\n";
     cout << "Results: " << passed << " passed, " << failed << " failed\n";
