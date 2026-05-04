@@ -28,7 +28,10 @@ bool authenticateUser(const vector<User>& users, string_view email, string_view 
 }
 
 void handleRegister(vector<User>& users) {
-    string email, password;
+    // FIX 1: each identifier in its own statement
+    string email;
+    string password;
+
     cout << "\n========== REGISTER ==========\n";
     cout << "Enter email: ";
     getline(cin, email);
@@ -51,7 +54,10 @@ void handleRegister(vector<User>& users) {
 }
 
 void handleLogin(const vector<User>& users, string& loggedInEmail) {
-    string email, password;
+    // FIX 2: each identifier in its own statement
+    string email;
+    string password;
+
     cout << "\n========== LOGIN ==========\n";
     cout << "Enter email: ";
     getline(cin, email);
@@ -142,10 +148,11 @@ bool registerForCourse(vector<User>& users, string_view email,
         cout << "ERROR: User not found!\n";
         return false;
     }
-    bool alreadyEnrolled = any_of(userIt->enrolledCourseIds.begin(),
-                                  userIt->enrolledCourseIds.end(),
-                                  [courseId](int id) { return id == courseId; });
-    if (alreadyEnrolled) {
+    // FIX 3: init-statement for alreadyEnrolled inside the if
+    if (bool alreadyEnrolled = any_of(userIt->enrolledCourseIds.begin(),
+                                      userIt->enrolledCourseIds.end(),
+                                      [courseId](int id) { return id == courseId; });
+        alreadyEnrolled) {
         cout << "ERROR: Already registered!\n";
         return false;
     }
@@ -180,9 +187,10 @@ bool dropCourse(vector<User>& users, string_view email,
         return false;
     }
     userIt->enrolledCourseIds.erase(idIt);
-    auto courseIt = find_if(courses.begin(), courses.end(),
-                            [courseId](const Course& c) { return c.id == courseId; });
-    if (courseIt != courses.end()) {
+    // FIX 4: init-statement for courseIt inside the if
+    if (auto courseIt = find_if(courses.begin(), courses.end(),
+                                [courseId](const Course& c) { return c.id == courseId; });
+        courseIt != courses.end()) {
         courseIt->capacity++;
     }
     cout << "SUCCESS: Course dropped from your schedule!\n";
