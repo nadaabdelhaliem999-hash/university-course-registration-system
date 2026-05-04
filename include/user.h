@@ -64,4 +64,7 @@ bool handleLoggedInMenu(int choice,
                         std::vector<Course>& courses,
                         std::string& loggedInEmail);
 
+// runApp: the full application loop — testable without main()
+void runApp(std::vector<User>& users, std::vector<Course>& courses);
+
 #endif
