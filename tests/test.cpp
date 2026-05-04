@@ -8,7 +8,6 @@
 
 using namespace std;
 
-// ─── Helper: redirect cin and cout ────────
 string runWithInput(const string& fakeInput, function<void()> func) {
     istringstream input(fakeInput);
     ostringstream output;
@@ -23,20 +22,17 @@ string runWithInput(const string& fakeInput, function<void()> func) {
 int passed = 0;
 int failed = 0;
 
-#define CHECK(desc, expr)                              \
-    do {                                               \
-        if (expr) {                                    \
-            cout << "[PASS] " << desc << "\n";         \
-            ++passed;                                  \
-        } else {                                       \
-            cout << "[FAIL] " << desc << "\n";         \
-            ++failed;                                  \
-        }                                              \
+#define CHECK(desc, expr)                         \
+    do {                                          \
+        if (expr) {                               \
+            cout << "[PASS] " << desc << "\n";    \
+            ++passed;                             \
+        } else {                                  \
+            cout << "[FAIL] " << desc << "\n";    \
+            ++failed;                             \
+        }                                         \
     } while (false)
 
-// ══════════════════════════════════════════
-//  SPRINT 1 TESTS
-// ══════════════════════════════════════════
 void test_isValidEmail() {
     cout << "\n--- isValidEmail ---\n";
     CHECK("valid email",             isValidEmail("test@gmail.com"));
@@ -105,7 +101,7 @@ void test_handleRegister() {
     {
         vector<User> users;
         runWithInput("alice@x.com\nsecret123\n", [&](){ handleRegister(users); });
-        string out = runWithInput("bob@x.com\npassword1\n", [&](){ handleRegister(users); });
+        runWithInput("bob@x.com\npassword1\n",   [&](){ handleRegister(users); });
         CHECK("second user registered",  users.size() == 2);
     }
 }
@@ -135,9 +131,6 @@ void test_handleLogin() {
     }
 }
 
-// ══════════════════════════════════════════
-//  SPRINT 2 TESTS
-// ══════════════════════════════════════════
 void test_insertSampleCourses() {
     cout << "\n--- insertSampleCourses ---\n";
     vector<Course> courses;
@@ -156,17 +149,17 @@ void test_displayCourses() {
     {
         vector<Course> empty;
         string out = runWithInput("", [&](){ displayCourses(empty); });
-        CHECK("empty list message",      out.find("No courses available") != string::npos);
+        CHECK("empty list message",  out.find("No courses available") != string::npos);
     }
     {
         vector<Course> courses;
         insertSampleCourses(courses);
         string out = runWithInput("", [&](){ displayCourses(courses); });
-        CHECK("shows course name",       out.find("Mathematics 101") != string::npos);
-        CHECK("shows instructor",        out.find("Dr. Ahmed") != string::npos);
-        CHECK("shows schedule",          out.find("Sun/Tue") != string::npos);
-        CHECK("shows capacity",          out.find("30") != string::npos);
-        CHECK("shows header",            out.find("AVAILABLE COURSES") != string::npos);
+        CHECK("shows course name",   out.find("Mathematics 101") != string::npos);
+        CHECK("shows instructor",    out.find("Dr. Ahmed") != string::npos);
+        CHECK("shows schedule",      out.find("Sun/Tue") != string::npos);
+        CHECK("shows capacity",      out.find("30") != string::npos);
+        CHECK("shows header",        out.find("AVAILABLE COURSES") != string::npos);
     }
 }
 
@@ -176,23 +169,23 @@ void test_searchCourses() {
     insertSampleCourses(courses);
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "math"); });
-        CHECK("finds by name",           out.find("Mathematics 101") != string::npos);
+        CHECK("finds by name",       out.find("Mathematics 101") != string::npos);
     }
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "MATH"); });
-        CHECK("case insensitive",        out.find("Mathematics 101") != string::npos);
+        CHECK("case insensitive",    out.find("Mathematics 101") != string::npos);
     }
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "ahmed"); });
-        CHECK("finds by instructor",     out.find("Dr. Ahmed") != string::npos);
+        CHECK("finds by instructor", out.find("Dr. Ahmed") != string::npos);
     }
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "xyznotfound"); });
-        CHECK("no results message",      out.find("No courses found") != string::npos);
+        CHECK("no results message",  out.find("No courses found") != string::npos);
     }
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "101"); });
-        CHECK("partial match works",     out.find("Mathematics 101") != string::npos);
+        CHECK("partial match works", out.find("Mathematics 101") != string::npos);
     }
 }
 
@@ -210,21 +203,18 @@ void test_handleSearchCourses() {
     insertSampleCourses(courses);
     {
         string out = runWithInput("math\n", [&](){ handleSearchCourses(courses); });
-        CHECK("valid search works",      out.find("Mathematics 101") != string::npos);
+        CHECK("valid search works",  out.find("Mathematics 101") != string::npos);
     }
     {
         string out = runWithInput("\n", [&](){ handleSearchCourses(courses); });
-        CHECK("empty keyword error",     out.find("Please enter a keyword") != string::npos);
+        CHECK("empty keyword error", out.find("Please enter a keyword") != string::npos);
     }
     {
         string out = runWithInput("sara\n", [&](){ handleSearchCourses(courses); });
-        CHECK("search by instructor",    out.find("Dr. Sara") != string::npos);
+        CHECK("search by instructor",out.find("Dr. Sara") != string::npos);
     }
 }
 
-// ══════════════════════════════════════════
-//  SPRINT 3 TESTS
-// ══════════════════════════════════════════
 void test_registerForCourse() {
     cout << "\n--- registerForCourse ---\n";
     vector<User> users = {{"alice@x.com","secret",{}}};
@@ -276,7 +266,7 @@ void test_registerForCourse() {
 
 void test_dropCourse() {
     cout << "\n--- dropCourse ---\n";
-    vector<User> users   = {{"alice@x.com","secret",{1}}};
+    vector<User> users = {{"alice@x.com","secret",{1}}};
     vector<Course> courses;
     insertSampleCourses(courses);
     int originalCapacity = courses[0].capacity;
@@ -284,21 +274,21 @@ void test_dropCourse() {
         string out = runWithInput("", [&](){
             dropCourse(users, "alice@x.com", courses, 1);
         });
-        CHECK("drop success",            out.find("SUCCESS") != string::npos);
-        CHECK("course removed",          users[0].enrolledCourseIds.empty());
-        CHECK("capacity restored",       courses[0].capacity == originalCapacity + 1);
+        CHECK("drop success",        out.find("SUCCESS") != string::npos);
+        CHECK("course removed",      users[0].enrolledCourseIds.empty());
+        CHECK("capacity restored",   courses[0].capacity == originalCapacity + 1);
     }
     {
         string out = runWithInput("", [&](){
             dropCourse(users, "alice@x.com", courses, 1);
         });
-        CHECK("not enrolled error",      out.find("not registered") != string::npos);
+        CHECK("not enrolled error",  out.find("not registered") != string::npos);
     }
     {
         string out = runWithInput("", [&](){
             dropCourse(users, "nobody@x.com", courses, 1);
         });
-        CHECK("user not found error",    out.find("User not found") != string::npos);
+        CHECK("user not found error",out.find("User not found") != string::npos);
     }
 }
 
@@ -333,17 +323,17 @@ void test_viewSchedule() {
 
 void test_handleRegisterForCourse() {
     cout << "\n--- handleRegisterForCourse ---\n";
-    vector<User> users   = {{"alice@x.com","secret",{}}};
+    vector<User>   users = {{"alice@x.com","secret",{}}};
     vector<Course> courses;
     insertSampleCourses(courses);
     {
-        string out = runWithInput("1\n", [&](){
+        runWithInput("1\n", [&](){
             handleRegisterForCourse(users, "alice@x.com", courses);
         });
-        CHECK("registered via handler",  users[0].enrolledCourseIds.size() == 1);
+        CHECK("registered via handler",   users[0].enrolledCourseIds.size() == 1);
     }
     {
-        string out = runWithInput("2\n", [&](){
+        runWithInput("2\n", [&](){
             handleRegisterForCourse(users, "alice@x.com", courses);
         });
         CHECK("registered second course", users[0].enrolledCourseIds.size() == 2);
@@ -352,13 +342,11 @@ void test_handleRegisterForCourse() {
 
 void test_handleDropCourse() {
     cout << "\n--- handleDropCourse ---\n";
-    vector<User> users   = {{"alice@x.com","secret",{1}}};
+    vector<User>   users = {{"alice@x.com","secret",{1}}};
     vector<Course> courses;
     insertSampleCourses(courses);
-    string out = runWithInput("1\n", [&](){
-        handleDropCourse(users, "alice@x.com", courses);
-    });
-    CHECK("dropped via handler",     users[0].enrolledCourseIds.empty());
+    runWithInput("1\n", [&](){ handleDropCourse(users, "alice@x.com", courses); });
+    CHECK("dropped via handler",      users[0].enrolledCourseIds.empty());
 }
 
 void test_handleViewSchedule() {
@@ -369,154 +357,130 @@ void test_handleViewSchedule() {
     string out = runWithInput("", [&](){
         handleViewSchedule(users, "alice@x.com", courses);
     });
-    CHECK("shows schedule header",   out.find("MY SCHEDULE") != string::npos);
-    CHECK("shows enrolled course",   out.find("Mathematics 101") != string::npos);
+    CHECK("shows schedule header",    out.find("MY SCHEDULE") != string::npos);
+    CHECK("shows enrolled course",    out.find("Mathematics 101") != string::npos);
 }
 
-// ══════════════════════════════════════════
-//  MAIN.CPP MENU TESTS
-// ══════════════════════════════════════════
 void test_handleGuestMenu() {
     cout << "\n--- handleGuestMenu ---\n";
-
     vector<User>   users;
     vector<Course> courses;
     string loggedInEmail = "";
     insertSampleCourses(courses);
-
-    // Case 1: Register
     {
         string out = runWithInput("alice@x.com\nsecret123\n", [&](){
             bool result = handleGuestMenu(1, users, courses, loggedInEmail);
-            CHECK("case 1 returns true",     result == true);
+            CHECK("case 1 returns true",  result == true);
         });
-        CHECK("case 1 register works",   out.find("SUCCESS") != string::npos);
+        CHECK("case 1 register works",    out.find("SUCCESS") != string::npos);
     }
-    // Case 2: Login
     {
         string out = runWithInput("alice@x.com\nsecret123\n", [&](){
             bool result = handleGuestMenu(2, users, courses, loggedInEmail);
-            CHECK("case 2 returns true",     result == true);
+            CHECK("case 2 returns true",  result == true);
         });
-        CHECK("case 2 login works",      out.find("Welcome back") != string::npos);
-        CHECK("case 2 sets email",       loggedInEmail == "alice@x.com");
+        CHECK("case 2 login works",       out.find("Welcome back") != string::npos);
+        CHECK("case 2 sets email",        loggedInEmail == "alice@x.com");
     }
-    // Reset for next tests
     loggedInEmail = "";
-
-    // Case 3: View courses
     {
         string out = runWithInput("", [&](){
             bool result = handleGuestMenu(3, users, courses, loggedInEmail);
-            CHECK("case 3 returns true",     result == true);
+            CHECK("case 3 returns true",  result == true);
         });
-        CHECK("case 3 shows courses",    out.find("Mathematics 101") != string::npos);
+        CHECK("case 3 shows courses",     out.find("Mathematics 101") != string::npos);
     }
-    // Case 4: Search courses
     {
         string out = runWithInput("math\n", [&](){
             bool result = handleGuestMenu(4, users, courses, loggedInEmail);
-            CHECK("case 4 returns true",     result == true);
+            CHECK("case 4 returns true",  result == true);
         });
-        CHECK("case 4 search works",     out.find("Mathematics 101") != string::npos);
+        CHECK("case 4 search works",      out.find("Mathematics 101") != string::npos);
     }
-    // Case 5: Exit
     {
         string out = runWithInput("", [&](){
             bool result = handleGuestMenu(5, users, courses, loggedInEmail);
-            CHECK("case 5 returns false",    result == false);
+            CHECK("case 5 returns false", result == false);
         });
-        CHECK("case 5 goodbye",          out.find("Goodbye") != string::npos);
+        CHECK("case 5 goodbye",           out.find("Goodbye") != string::npos);
     }
-    // Default: Invalid
     {
         string out = runWithInput("", [&](){
             bool result = handleGuestMenu(99, users, courses, loggedInEmail);
-            CHECK("default returns true",    result == true);
+            CHECK("default returns true", result == true);
         });
-        CHECK("default invalid error",   out.find("Invalid choice") != string::npos);
+        CHECK("default invalid error",    out.find("Invalid choice") != string::npos);
     }
 }
 
 void test_handleLoggedInMenu() {
     cout << "\n--- handleLoggedInMenu ---\n";
-
     vector<User>   users = {{"alice@x.com","secret",{}}};
     vector<Course> courses;
     string loggedInEmail = "alice@x.com";
     insertSampleCourses(courses);
-
-    // Case 1: View courses
     {
         string out = runWithInput("", [&](){
             bool result = handleLoggedInMenu(1, users, courses, loggedInEmail);
-            CHECK("logged case 1 returns true",  result == true);
+            CHECK("logged case 1 returns true", result == true);
         });
-        CHECK("logged case 1 shows courses", out.find("Mathematics 101") != string::npos);
+        CHECK("logged case 1 shows courses",    out.find("Mathematics 101") != string::npos);
     }
-    // Case 2: Search courses
     {
         string out = runWithInput("math\n", [&](){
             bool result = handleLoggedInMenu(2, users, courses, loggedInEmail);
-            CHECK("logged case 2 returns true",  result == true);
+            CHECK("logged case 2 returns true", result == true);
         });
-        CHECK("logged case 2 search works",  out.find("Mathematics 101") != string::npos);
+        CHECK("logged case 2 search works",     out.find("Mathematics 101") != string::npos);
     }
-    // Case 3: Register for course
     {
         string out = runWithInput("1\n", [&](){
             bool result = handleLoggedInMenu(3, users, courses, loggedInEmail);
-            CHECK("logged case 3 returns true",  result == true);
+            CHECK("logged case 3 returns true", result == true);
         });
-        CHECK("logged case 3 registered",    users[0].enrolledCourseIds.size() == 1);
+        CHECK("logged case 3 registered",       users[0].enrolledCourseIds.size() == 1);
     }
-    // Case 4: Drop course
     {
         string out = runWithInput("1\n", [&](){
             bool result = handleLoggedInMenu(4, users, courses, loggedInEmail);
-            CHECK("logged case 4 returns true",  result == true);
+            CHECK("logged case 4 returns true", result == true);
         });
-        CHECK("logged case 4 dropped",       users[0].enrolledCourseIds.empty());
+        CHECK("logged case 4 dropped",          users[0].enrolledCourseIds.empty());
     }
-    // Case 5: View schedule
     {
         users[0].enrolledCourseIds.push_back(1);
         string out = runWithInput("", [&](){
             bool result = handleLoggedInMenu(5, users, courses, loggedInEmail);
-            CHECK("logged case 5 returns true",  result == true);
+            CHECK("logged case 5 returns true", result == true);
         });
-        CHECK("logged case 5 schedule",      out.find("MY SCHEDULE") != string::npos);
+        CHECK("logged case 5 schedule",         out.find("MY SCHEDULE") != string::npos);
     }
-    // Case 6: Logout
     {
         string out = runWithInput("", [&](){
             bool result = handleLoggedInMenu(6, users, courses, loggedInEmail);
-            CHECK("logged case 6 returns true",  result == true);
+            CHECK("logged case 6 returns true", result == true);
         });
-        CHECK("logged case 6 logged out",    loggedInEmail.empty());
-        CHECK("logged case 6 message",       out.find("Logged out") != string::npos);
+        CHECK("logged case 6 logged out",       loggedInEmail.empty());
+        CHECK("logged case 6 message",          out.find("Logged out") != string::npos);
     }
-    // Case 7: Exit
     {
+        string loggedIn2 = "alice@x.com";
         string out = runWithInput("", [&](){
-            bool result = handleLoggedInMenu(7, users, courses, loggedInEmail);
-            CHECK("logged case 7 returns false", result == false);
+            bool result = handleLoggedInMenu(7, users, courses, loggedIn2);
+            CHECK("logged case 7 returns false",result == false);
         });
-        CHECK("logged case 7 goodbye",       out.find("Goodbye") != string::npos);
+        CHECK("logged case 7 goodbye",          out.find("Goodbye") != string::npos);
     }
-    // Default: Invalid
     {
+        string loggedIn2 = "alice@x.com";
         string out = runWithInput("", [&](){
-            bool result = handleLoggedInMenu(99, users, courses, loggedInEmail);
-            CHECK("logged default returns true", result == true);
+            bool result = handleLoggedInMenu(99, users, courses, loggedIn2);
+            CHECK("logged default returns true",result == true);
         });
-        CHECK("logged default invalid",      out.find("Invalid choice") != string::npos);
+        CHECK("logged default invalid",         out.find("Invalid choice") != string::npos);
     }
 }
 
-// ══════════════════════════════════════════
-//  Main
-// ══════════════════════════════════════════
 int main() {
     cout << "========== SPRINT 1 TESTS ==========\n";
     test_isValidEmail();
