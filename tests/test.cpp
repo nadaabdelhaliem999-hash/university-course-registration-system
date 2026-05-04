@@ -59,16 +59,21 @@ void test_emailAlreadyExists() {
     CHECK("carol not found",         !emailAlreadyExists(users, "carol@x.com"));
     CHECK("empty list = false",      !emailAlreadyExists({}, "alice@x.com"));
     CHECK("case sensitive",          !emailAlreadyExists(users, "ALICE@x.com"));
+    CHECK("first in list found",     emailAlreadyExists(users, "alice@x.com"));
+    CHECK("last in list found",      emailAlreadyExists(users, "bob@x.com"));
 }
 
 void test_authenticateUser() {
     cout << "\n--- authenticateUser ---\n";
-    vector<User> users = {{"alice@x.com","secret",{}}};
-    CHECK("correct credentials",     authenticateUser(users,"alice@x.com","secret"));
-    CHECK("wrong password",          !authenticateUser(users,"alice@x.com","wrong"));
-    CHECK("wrong email",             !authenticateUser(users,"carol@x.com","secret"));
-    CHECK("empty list = false",      !authenticateUser({},"alice@x.com","secret"));
-    CHECK("both wrong",              !authenticateUser(users,"wrong@x.com","wrong"));
+    vector<User> users = {{"alice@x.com","secret",{}},{"bob@x.com","pass123",{}}};
+    CHECK("correct credentials alice",   authenticateUser(users,"alice@x.com","secret"));
+    CHECK("correct credentials bob",     authenticateUser(users,"bob@x.com","pass123"));
+    CHECK("wrong password",              !authenticateUser(users,"alice@x.com","wrong"));
+    CHECK("wrong email",                 !authenticateUser(users,"carol@x.com","secret"));
+    CHECK("empty list = false",          !authenticateUser({},"alice@x.com","secret"));
+    CHECK("both wrong",                  !authenticateUser(users,"wrong@x.com","wrong"));
+    CHECK("email ok password wrong",     !authenticateUser(users,"alice@x.com","notright"));
+    CHECK("email wrong password ok",     !authenticateUser(users,"nobody@x.com","secret"));
 }
 
 void test_handleRegister() {
@@ -129,6 +134,12 @@ void test_handleLogin() {
         });
         CHECK("wrong email rejected",    out.find("Wrong email or password") != string::npos);
     }
+    {
+        string out = runWithInput("nobody@x.com\nwrong\n", [&](){
+            handleLogin(users, loggedInEmail);
+        });
+        CHECK("both wrong rejected",     out.find("Wrong email or password") != string::npos);
+    }
 }
 
 void test_insertSampleCourses() {
@@ -169,27 +180,36 @@ void test_searchCourses() {
     insertSampleCourses(courses);
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "math"); });
-        CHECK("finds by name only",       out.find("Mathematics 101") != string::npos);
+        CHECK("finds by name only",           out.find("Mathematics 101") != string::npos);
     }
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "MATH"); });
-        CHECK("case insensitive",         out.find("Mathematics 101") != string::npos);
+        CHECK("case insensitive name",        out.find("Mathematics 101") != string::npos);
     }
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "ahmed"); });
-        CHECK("finds by instructor only", out.find("Dr. Ahmed") != string::npos);
+        CHECK("finds by instructor only",     out.find("Dr. Ahmed") != string::npos);
     }
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "xyznotfound"); });
-        CHECK("no results message",       out.find("No courses found") != string::npos);
+        CHECK("no results message",           out.find("No courses found") != string::npos);
     }
     {
         string out = runWithInput("", [&](){ searchCourses(courses, "101"); });
-        CHECK("partial match works",      out.find("Mathematics 101") != string::npos);
+        CHECK("partial match works",          out.find("Mathematics 101") != string::npos);
     }
     {
-        string out = runWithInput("", [&](){ searchCourses(courses, "science"); });
-        CHECK("finds computer science",   out.find("Computer Science") != string::npos);
+        // "a" appears in "Mathematics" (name) AND "Dr. Ahmed" (instructor) — covers nameMatch=true AND instructorMatch=true
+        string out = runWithInput("", [&](){ searchCourses(courses, "a"); });
+        CHECK("both name and instructor match", out.find("Mathematics 101") != string::npos);
+    }
+    {
+        string out = runWithInput("", [&](){ searchCourses(courses, "sara"); });
+        CHECK("finds Dr. Sara by instructor", out.find("Dr. Sara") != string::npos);
+    }
+    {
+        string out = runWithInput("", [&](){ searchCourses(courses, "computer"); });
+        CHECK("finds computer science",       out.find("Computer Science") != string::npos);
     }
 }
 
@@ -266,6 +286,13 @@ void test_registerForCourse() {
         });
         CHECK("full course error",       out.find("full") != string::npos);
     }
+    {
+        // alreadyEnrolled = false branch: register for a NEW course (not already enrolled)
+        string out = runWithInput("", [&](){
+            registerForCourse(users, "alice@x.com", courses, 3);
+        });
+        CHECK("register new course ok",  out.find("SUCCESS") != string::npos);
+    }
 }
 
 void test_dropCourse() {
@@ -293,6 +320,14 @@ void test_dropCourse() {
             dropCourse(users, "nobody@x.com", courses, 1);
         });
         CHECK("user not found error",out.find("User not found") != string::npos);
+    }
+    {
+        // courseIt == courses.end() branch: user enrolled in ID 999 but it's not in courses list
+        vector<User> users2 = {{"dave@x.com","pass",{999}}};
+        string out = runWithInput("", [&](){
+            dropCourse(users2, "dave@x.com", courses, 999);
+        });
+        CHECK("drop course not in list", out.find("SUCCESS") != string::npos);
     }
 }
 
@@ -322,6 +357,14 @@ void test_viewSchedule() {
             viewSchedule(users, "nobody@x.com", courses);
         });
         CHECK("user not found error",    out.find("User not found") != string::npos);
+    }
+    {
+        // courseIt == courses.end() branch in viewSchedule: enrolled in ID 999 not in courses
+        vector<User> users2 = {{"dave@x.com","pass",{999}}};
+        string out = runWithInput("", [&](){
+            viewSchedule(users2, "dave@x.com", courses);
+        });
+        CHECK("schedule with missing course", out.find("MY SCHEDULE") != string::npos);
     }
 }
 
@@ -491,10 +534,8 @@ void test_runApp() {
         vector<User>   users;
         vector<Course> courses;
         insertSampleCourses(courses);
-        string out = runWithInput("5\n", [&](){
-            runApp(users, courses);
-        });
-        CHECK("runApp exits on 5",       out.find("Goodbye") != string::npos);
+        string out = runWithInput("5\n", [&](){ runApp(users, courses); });
+        CHECK("runApp exits on 5",           out.find("Goodbye") != string::npos);
     }
     {
         vector<User>   users;
@@ -505,7 +546,7 @@ void test_runApp() {
             "2\nalice@x.com\nsecret123\n"
             "7\n",
             [&](){ runApp(users, courses); });
-        CHECK("runApp register then login", out.find("Welcome back") != string::npos);
+        CHECK("runApp login works",          out.find("Welcome back") != string::npos);
     }
     {
         vector<User>   users;
@@ -514,22 +555,34 @@ void test_runApp() {
         string out = runWithInput(
             "1\nalice@x.com\nsecret123\n"
             "2\nalice@x.com\nsecret123\n"
+            "1\n"
+            "2\nmath\n"
             "3\n1\n"
             "4\n1\n"
             "5\n"
             "6\n"
             "5\n",
             [&](){ runApp(users, courses); });
-        CHECK("runApp full flow works",     out.find("Logged out") != string::npos);
+        CHECK("runApp full flow",            out.find("Logged out") != string::npos);
     }
     {
         vector<User>   users;
         vector<Course> courses;
         insertSampleCourses(courses);
-        string out = runWithInput("99\n5\n", [&](){
-            runApp(users, courses);
-        });
-        CHECK("runApp invalid then exit",   out.find("Invalid choice") != string::npos);
+        string out = runWithInput("99\n5\n", [&](){ runApp(users, courses); });
+        CHECK("runApp invalid then exit",    out.find("Invalid choice") != string::npos);
+    }
+    {
+        vector<User>   users;
+        vector<Course> courses;
+        insertSampleCourses(courses);
+        string out = runWithInput(
+            "1\nalice@x.com\nsecret123\n"
+            "2\nalice@x.com\nsecret123\n"
+            "99\n"
+            "7\n",
+            [&](){ runApp(users, courses); });
+        CHECK("runApp logged in invalid",    out.find("Invalid choice") != string::npos);
     }
 }
 
